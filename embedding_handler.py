@@ -20,6 +20,7 @@ class ImageLoader(ABC):
     def load(self, source: str) -> Image.Image:
         ...
 
+
 class URLImageLoader(ImageLoader):
     def load(self, source: str) -> tuple[ImageFile | None, str]:
         img, message = None, None
