@@ -76,7 +76,10 @@ def get_collections_names_list() -> list[Any] | bool:
         collections = response.json()
         print(collections)
         return [collection.get('name') for collection in collections]
-    return False
+    else:
+        print(f"Ошибка при получении списка коллекций. Код ошибки: {response.status_code}")
+        print(response.text)
+        return False
 
 
 def send_image_to_building_images(building_id, image_file):
