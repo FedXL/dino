@@ -1,0 +1,123 @@
+building-update
+building-update-2
+results
+results2
+# OS-specific files
+##########################
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.trash
+.nfs*
+
+##########################
+# Python-specific
+##########################
+# Byte-compiled / optimized / compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+.env/
+.venv/
+env/
+ENV/
+.Python
+pip-log.txt
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+##########################
+# Logs and databases
+##########################
+*.log
+*.sqlite3
+logs/
+*.pid
+
+##########################
+# IDE and editor specific
+##########################
+# PyCharm
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+.history/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Vim
+*.swp
+*.swo
+
+##########################
+# Node.js / JavaScript (if used)
+##########################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+##########################
+# Temporary files
+##########################
+*.tmp
+*.temp
+*.bak
+*.old
+~$*
+*.swp
+*.swo
+
+.gitignore
+.env
+##########################
+# Images and generated media
+##########################
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.psd
+*.tiff
+*.webp
+
+##########################
+# Archive and data files
+##########################
+*.tar
+*.zip
+*.gz
+*.rar
+*.7z
+*.iso
+*.bak
+
+##########################
+# Custom rules (add below this line)
+##########################
