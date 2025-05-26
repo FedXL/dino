@@ -1,7 +1,8 @@
 import os
 from typing import List, Any
 import requests
-
+from dotenv import load_dotenv
+load_dotenv()
 token = os.getenv("TOKEN")
 
 
