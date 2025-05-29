@@ -96,7 +96,7 @@ def extract_embedding_from_task_collection(collection_name='14-buildings-set'):
     total = len(result)
     service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
     os.makedirs('results2', exist_ok=True)
-
+    emb = []
     for index, task in enumerate(result, start=1):
         embedding = service.extract(task.get('url'))
         data = {
@@ -106,20 +106,27 @@ def extract_embedding_from_task_collection(collection_name='14-buildings-set'):
             "embedding": embedding.tolist()
         }
         print(index," / ",len(result),' Длинна',len(embedding.tolist()))
+        emb.append(data)
+    return emb
 
-        result_api = send_task_image_embedding(data)
-        filename = f'{task.get("id")}.json'
-        json_path = f'results2/{filename}'
+def send_embedding_to_master_base(emb):
+        total=len(emb)
+        for index, data in enumerate(emb):
+            result_api = send_task_image_embedding(data)
+            filename = f'{data.get("id")}.json'
+            json_path = f'results2/{filename}'
 
-        new_data = {
-            "ok": result_api,
-            "id": task.get('id')
-        }
+            new_data = {
+                "ok": result_api,
+                "id": data.get('id')
+            }
 
-        with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(new_data, f, ensure_ascii=False, indent=2)
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(new_data, f, ensure_ascii=False, indent=2)
 
-        print(f"[{index}/{total}] Обработан task ID {task.get('id')}, сохранено в {json_path}")
+            print(f"[{index}/{total}] Обработан task ID {data.get('id')}, сохранено в {json_path}")
+
+
 
 
 def main_flow():
