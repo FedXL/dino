@@ -35,7 +35,7 @@ class URLImageLoader(ImageLoader):
             message = f"Ошибка при загрузке изображения: {e}"
         except Exception as e:
             message = f"Ошибка при обработке изображения: {e}"
-        time_left = 1000 - (time.perf_counter() - start)
+        time_left = time.perf_counter() - start
         print(f'[Конец загрузки изображения] {time_left}')
         return img, message
 
