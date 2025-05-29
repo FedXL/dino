@@ -36,8 +36,6 @@ class URLImageLoader(ImageLoader):
         return img, message
 
 
-
-
 class Dino2ExtractorV1(EmbeddingExtractor):
     def __init__(self, image_size=518, model_name='dinov2_vitg14', device='cuda'):
         start = time.perf_counter()

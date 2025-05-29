@@ -4,7 +4,7 @@ from queue import Queue
 from threading import Thread
 import time
 
-from embedding_handler import Dino2ExtractorV1, EmbeddingService, ImageLoader
+from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader
 
 
 # Имитация вашей модели для извлечения эмбеддингов
@@ -19,7 +19,7 @@ task_queue = Queue()
 results = {}
 
 # Глобальная модель
-embedding_service = EmbeddingService(ImageLoader(), Dino2ExtractorV1())
+embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 
 # Инициализация FastAPI
 app = FastAPI()
