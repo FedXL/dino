@@ -28,24 +28,24 @@ embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 app = FastAPI()
 
 # Функция обработчика задач (фоновые задания)
-def worker():
-    while True:
-        task_data = task_queue.get()  # Достаем задачу из очереди
-        if task_data is None:  # Завершаем поток, если задача "пустая"
-            break
-        task_id, url = task_data
-        try:
-            # Обрабатываем картинку с помощью вашей модели
-            embedding = embedding_service.extract(url)
-            results[task_id] = {"status": "done", "embedding": embedding}
-        except Exception as e:
-            results[task_id] = {"status": "error", "detail": str(e)}
-        finally:
-            task_queue.task_done()
-
+# def worker():
+#     while True:
+#         task_data = task_queue.get()  # Достаем задачу из очереди
+#         if task_data is None:  # Завершаем поток, если задача "пустая"
+#             break
+#         task_id, url = task_data
+#         try:
+#             Обрабатываем картинку с помощью вашей модели
+            # embedding = embedding_service.extract(url)
+            # results[task_id] = {"status": "done", "embedding": embedding}
+        # except Exception as e:
+        #     results[task_id] = {"status": "error", "detail": str(e)}
+        # finally:
+        #     task_queue.task_done()
+#
 # Запускаем фоновый воркер
-worker_thread = Thread(target=worker, daemon=True)
-worker_thread.start()
+# worker_thread = Thread(target=worker, daemon=True)
+# worker_thread.start()
 
 
 
@@ -53,13 +53,13 @@ worker_thread.start()
 
 
 # Эндпоинт для постановки задачи в очередь
-@app.post("/embedding/extract")
-async def add_task(request: EmbeddingRequest):
+# @app.post("/embedding/extract")
+# async def add_task(request: EmbeddingRequest):
     # Генерируем уникальный task_id
-    task_id = f"task_{int(time.time() * 1000)}"
-    results[task_id] = {"status": "pending"}
-    task_queue.put((task_id, request.url))  # Добавляем задачу в очередь
-    return {"task_id": task_id}
+    # task_id = f"task_{int(time.time() * 1000)}"
+    # results[task_id] = {"status": "pending"}
+    # task_queue.put((task_id, request.url))  # Добавляем задачу в очередь
+    # return {"task_id": task_id}
 
 @app.post("/embedding/fast_extract")
 async def extract_embedding(request: EmbeddingRequest):
@@ -72,11 +72,11 @@ async def extract_embedding(request: EmbeddingRequest):
     return {"embedding": embedding,"url":request.url}
 
 # Эндпоинт для получения статуса задачи
-@app.get("/embedding/status/{task_id}")
-async def get_task_status(task_id: str):
-    if task_id not in results:
-        raise HTTPException(status_code=404, detail="Task ID not found")
-    return results[task_id]
+# @app.get("/embedding/status/{task_id}")
+# async def get_task_status(task_id: str):
+#     if task_id not in results:
+#         raise HTTPException(status_code=404, detail="Task ID not found")
+#     return results[task_id]
 
 # Эндпоинт для проверки доступности системы
 @app.get("/")
