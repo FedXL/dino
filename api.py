@@ -63,12 +63,13 @@ app = FastAPI()
 
 @app.post("/embedding/fast_extract")
 async def extract_embedding(request: EmbeddingRequest):
-    timestamp = int(time.time() * 1000)
-
+    start = time.perf_counter()
+    print(f'[fastapi start] {start}')
     fastapi_logger.info(f"start {time}")
     result = embedding_service.extract(request.url)
     embedding = result.tolist()
-    time_left = 1000 - (timestamp - int(time.time() * 1000))
+    time_left = 1000 - (time.perf_counter() - start)
+    print(f"[fastapi end handler] {time_left}")
     return {"embedding": embedding,"url":request.url}
 
 # Эндпоинт для получения статуса задачи
