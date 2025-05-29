@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from queue import Queue
@@ -8,6 +10,7 @@ from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader
 
 
 # Имитация вашей модели для извлечения эмбеддингов
+fastapi_logger = logging.getLogger("fastapi")
 
 # Модель данных для обработки
 class EmbeddingRequest(BaseModel):
@@ -60,8 +63,12 @@ async def add_task(request: EmbeddingRequest):
 
 @app.post("/embedding/fast_extract")
 async def extract_embedding(request: EmbeddingRequest):
+    timestamp = int(time.time() * 1000)
+
+    fastapi_logger.info(f"start {time}")
     result = embedding_service.extract(request.url)
     embedding = result.tolist()
+    time_left = 1000 - (timestamp - int(time.time() * 1000))
     return {"embedding": embedding,"url":request.url}
 
 # Эндпоинт для получения статуса задачи

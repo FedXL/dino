@@ -23,6 +23,8 @@ class ImageLoader(ABC):
 
 class URLImageLoader(ImageLoader):
     def load(self, source: str) -> tuple[ImageFile | None, str]:
+        print('[Загрузка изображения]')
+        start = time.perf_counter()
         img, message = None, None
         try:
             response = requests.get(source)
@@ -33,6 +35,8 @@ class URLImageLoader(ImageLoader):
             message = f"Ошибка при загрузке изображения: {e}"
         except Exception as e:
             message = f"Ошибка при обработке изображения: {e}"
+        time_left = 1000 - (time.perf_counter() - start)
+        print(f'[Конец загрузки изображения] {time_left}')
         return img, message
 
 
@@ -56,7 +60,7 @@ class Dino2ExtractorV1(EmbeddingExtractor):
             transforms.Normalize(mean=[0.5] * 3, std=[0.5] * 3)
         ])
         print(f"[Transform готов за {time.perf_counter() - start:.2f} сек]")
-        print(f"Peak memory usage: {torch.cuda.max_memory_allocated(device) / 1024 ** 3:.3f} GB")
+
 
 
     def extract(self, image: Image.Image) -> np.ndarray:
@@ -67,8 +71,9 @@ class Dino2ExtractorV1(EmbeddingExtractor):
         with torch.no_grad():
             features = self.model(img_tensor)
         elapsed = time.perf_counter() - start
+        result = features.squeeze(0).cpu().numpy()
         print(f"[Эмбеддинг извлечён за {elapsed:.2f} сек]")
-        return features.squeeze(0).cpu().numpy()
+        return result
 
 
 class EmbeddingService:
