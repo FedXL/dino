@@ -68,7 +68,7 @@ async def extract_embedding(request: EmbeddingRequest):
     fastapi_logger.info(f"start {time}")
     result = embedding_service.extract(request.url)
     embedding = result.tolist()
-    time_left = 1000 - (time.perf_counter() - start)
+    time_left = time.perf_counter() - start
     print(f"[fastapi end handler] {time_left}")
     return {"embedding": embedding,"url":request.url}
 
