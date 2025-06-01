@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import Union, BinaryIO, Optional, Tuple
+
 import torch
 from PIL.ImageFile import ImageFile
 from torchvision import transforms
@@ -15,10 +17,12 @@ class EmbeddingExtractor(ABC):
     def extract(self, image: Image.Image) -> np.ndarray:
         ...
 
+
 class ImageLoader(ABC):
     @abstractmethod
     def load(self, source: str) -> Image.Image:
         ...
+
 
 
 class URLImageLoader(ImageLoader):
@@ -38,6 +42,10 @@ class URLImageLoader(ImageLoader):
         time_left = time.perf_counter() - start
         print(f'[Конец загрузки изображения] {time_left}')
         return img, message
+
+
+
+
 
 
 class Dino2ExtractorV1(EmbeddingExtractor):
@@ -86,13 +94,3 @@ class EmbeddingService:
         if image is None:
             raise ValueError(message)
         return self.extractor.extract(image)
-
-
-# if __name__ == "__main__":
-#     start_time = time.time()
-#     url = "https://storage.googleapis.com/artcracker-bucket/137fff8c-340e-404e-ab3d-e1a4cca5d5fe.jpg"
-#     service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
-#     emb = service.extract(url)
-#     print(f"Embedding shape:", emb.shape)
-#     print(f"First 5 values:", emb[:5])
-#     print(f"Time elapsed: {time.time() - start_time} seconds")

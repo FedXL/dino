@@ -1,85 +1,71 @@
 import logging
-
+import requests
+import time
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from queue import Queue
 from threading import Thread
-import time
+from contextlib import asynccontextmanager
 
 from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader
 
-
-# Имитация вашей модели для извлечения эмбеддингов
+# Логгер FastAPI
 fastapi_logger = logging.getLogger("fastapi")
 
-# Модель данных для обработки
+
+# Модель запроса
 class EmbeddingRequest(BaseModel):
     url: str
     building_image_id: int = None
 
-# Очередь задач
+
+# Очередь задач и результаты
 task_queue = Queue()
 results = {}
 
 # Глобальная модель
 embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 
-# Инициализация FastAPI
-app = FastAPI()
 
-# Функция обработчика задач (фоновые задания)
-# def worker():
-#     while True:
-#         task_data = task_queue.get()  # Достаем задачу из очереди
-#         if task_data is None:  # Завершаем поток, если задача "пустая"
-#             break
-#         task_id, url = task_data
-#         try:
-#             Обрабатываем картинку с помощью вашей модели
-            # embedding = embedding_service.extract(url)
-            # results[task_id] = {"status": "done", "embedding": embedding}
-        # except Exception as e:
-        #     results[task_id] = {"status": "error", "detail": str(e)}
-        # finally:
-        #     task_queue.task_done()
-#
-# Запускаем фоновый воркер
-# worker_thread = Thread(target=worker, daemon=True)
-# worker_thread.start()
+# Lifespan обработчик
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        ip = requests.get("https://api.ipify.org").text
+        response = requests.post(
+            "https://mb.artcracker.io/api/v1/google_ip/",
+            json={"ip": ip},
+            timeout=5
+        )
+        if response.status_code in (200, 201):
+            fastapi_logger.info(f"IP отправлен: {ip}")
+        else:
+            fastapi_logger.error(f"Не удалось отправить IP: {response.status_code}, {response.text}")
+    except Exception as e:
+        fastapi_logger.error(f"Ошибка при отправке IP: {str(e)}")
+
+    yield  # После этого FastAPI запускает сервер
 
 
+# Инициализация FastAPI с lifespan
+app = FastAPI(lifespan=lifespan)
 
-
-
-
-# Эндпоинт для постановки задачи в очередь
-# @app.post("/embedding/extract")
-# async def add_task(request: EmbeddingRequest):
-    # Генерируем уникальный task_id
-    # task_id = f"task_{int(time.time() * 1000)}"
-    # results[task_id] = {"status": "pending"}
-    # task_queue.put((task_id, request.url))  # Добавляем задачу в очередь
-    # return {"task_id": task_id}
 
 @app.post("/embedding/fast_extract")
 async def extract_embedding(request: EmbeddingRequest):
     start = time.perf_counter()
     print(f'[fastapi start] {start}')
     fastapi_logger.info(f"start {time}")
+
     result = embedding_service.extract(request.url)
     embedding = result.tolist()
+
     time_left = time.perf_counter() - start
     print(f"[fastapi end handler] {time_left}")
-    return {"embedding": embedding,"url":request.url}
 
-# Эндпоинт для получения статуса задачи
-# @app.get("/embedding/status/{task_id}")
-# async def get_task_status(task_id: str):
-#     if task_id not in results:
-#         raise HTTPException(status_code=404, detail="Task ID not found")
-#     return results[task_id]
+    return {"embedding": embedding, "url": request.url}
 
-# Эндпоинт для проверки доступности системы
+
 @app.get("/")
 async def root():
     return {"message": "embedding service is up and running!"}
