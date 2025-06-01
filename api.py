@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
     try:
         ip = requests.get("https://api.ipify.org").text
         response = requests.post(
-            "https://mb.artcracker.io/api/v1/google_ip/",
+            "https://mb.artcracker.io/api/v1/update_embedding_api",
             json={"ip": ip},
             timeout=5
         )
