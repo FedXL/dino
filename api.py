@@ -5,6 +5,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from queue import Queue
 from contextlib import asynccontextmanager
+
+from starlette.concurrency import run_in_threadpool
+
 from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader
 
 fastapi_logger = logging.getLogger("fastapi")
@@ -52,8 +55,11 @@ async def extract_embedding(request: EmbeddingRequest):
     print(f'[fastapi start] {start}')
     fastapi_logger.info(f"start {time}")
 
-    result = embedding_service.extract(request.url)
+    result = await run_in_threadpool(embedding_service.extract, request.url)
     embedding = result.tolist()
+
+    # result = embedding_service.extract(request.url)
+    # embedding = result.tolist()
 
     time_left = time.perf_counter() - start
     print(f"[fastapi end handler] {time_left}")
