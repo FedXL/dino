@@ -1,34 +1,22 @@
 import logging
 import requests
 import time
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI
 from pydantic import BaseModel
 from queue import Queue
-from threading import Thread
 from contextlib import asynccontextmanager
-
 from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader
 
-# Логгер FastAPI
 fastapi_logger = logging.getLogger("fastapi")
 
-
-# Модель запроса
 class EmbeddingRequest(BaseModel):
     url: str
-    building_image_id: int = None
 
-
-# Очередь задач и результаты
 task_queue = Queue()
 results = {}
 AUTH_TOKEN = "dee4bbc55782819eb8047daf17242c1532d7a6d4"
 # Глобальная модель
 embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
-
-
-# Lifespan обработчик
-
 
 
 @asynccontextmanager
@@ -55,7 +43,6 @@ async def lifespan(app: FastAPI):
     yield
 
 
-# Инициализация FastAPI с lifespan
 app = FastAPI(lifespan=lifespan)
 
 
