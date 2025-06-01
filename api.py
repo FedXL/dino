@@ -33,6 +33,7 @@ embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    print("[lifespan] IP handler starting")
     try:
         ip = requests.get("https://api.ipify.org").text
         response = requests.post(
