@@ -28,6 +28,9 @@ embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 
 
 # Lifespan обработчик
+
+AUTH_TOKEN = "dee4bbc55782819eb8047daf17242c1532d7a6d4"
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
@@ -35,6 +38,11 @@ async def lifespan(app: FastAPI):
         response = requests.post(
             "https://mb.artcracker.io/api/v1/update_embedding_api",
             json={"ip": ip},
+            headers={
+                "Authorization": f"Token {AUTH_TOKEN}",
+                "Content-Type": "application/json",
+                "User-Agent": "embedding-service/1.0"
+            },
             timeout=5
         )
         if response.status_code in (200, 201):
@@ -44,7 +52,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         fastapi_logger.error(f"Ошибка при отправке IP: {str(e)}")
 
-    yield  # После этого FastAPI запускает сервер
+    yield
 
 
 # Инициализация FastAPI с lifespan
