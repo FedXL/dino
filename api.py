@@ -22,14 +22,14 @@ class EmbeddingRequest(BaseModel):
 # Очередь задач и результаты
 task_queue = Queue()
 results = {}
-
+AUTH_TOKEN = "dee4bbc55782819eb8047daf17242c1532d7a6d4"
 # Глобальная модель
 embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 
 
 # Lifespan обработчик
 
-AUTH_TOKEN = "dee4bbc55782819eb8047daf17242c1532d7a6d4"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -51,7 +51,6 @@ async def lifespan(app: FastAPI):
             fastapi_logger.error(f"Не удалось отправить IP: {response.status_code}, {response.text}")
     except Exception as e:
         fastapi_logger.error(f"Ошибка при отправке IP: {str(e)}")
-
     yield
 
 
