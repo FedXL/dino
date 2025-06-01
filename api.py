@@ -47,11 +47,11 @@ async def lifespan(app: FastAPI):
             timeout=5
         )
         if response.status_code in (200, 201):
-            fastapi_logger.info(f"IP отправлен: {ip}")
+            print(f"IP отправлен: {ip}")
         else:
-            fastapi_logger.error(f"Не удалось отправить IP: {response.status_code}, {response.text}")
+            print(f"Не удалось отправить IP: {response.status_code}, {response.text}")
     except Exception as e:
-        fastapi_logger.error(f"Ошибка при отправке IP: {str(e)}")
+        print(f"Ошибка при отправке IP: {str(e)}")
     yield
 
 
