@@ -24,7 +24,6 @@ class ImageLoader(ABC):
         ...
 
 
-
 class URLImageLoader(ImageLoader):
     def load(self, source: str) -> tuple[ImageFile | None, str]:
         print('[Загрузка изображения]')
@@ -42,10 +41,6 @@ class URLImageLoader(ImageLoader):
         time_left = time.perf_counter() - start
         print(f'[Конец загрузки изображения] {time_left}')
         return img, message
-
-
-
-
 
 
 class Dino2ExtractorV1(EmbeddingExtractor):

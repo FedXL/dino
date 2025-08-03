@@ -1,4 +1,5 @@
 import logging
+import os
 import requests
 import time
 from fastapi import FastAPI
@@ -17,8 +18,7 @@ class EmbeddingRequest(BaseModel):
 
 task_queue = Queue()
 results = {}
-AUTH_TOKEN = "dee4bbc55782819eb8047daf17242c1532d7a6d4"
-# Глобальная модель
+AUTH_TOKEN = os.getenv('TOKEN')
 embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 
 
