@@ -80,7 +80,7 @@ class Dino2ExtractorV1(EmbeddingExtractor):
         return result
 
 
-class InternVL3ImageExtractor(EmbeddingExtractor):
+class Intern3VL_2BExtractorV1(EmbeddingExtractor):
     def __init__(self, model_id="OpenGVLab/InternVL3-1B", image_size=448, device=DEVICE):
         self.device = device
         self.image_size = image_size
