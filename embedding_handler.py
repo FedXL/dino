@@ -116,14 +116,14 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
         print(f"[Transform готов за {time.perf_counter() - start:.2f} сек]")
 
     def extract(self, pil_image: Image.Image, full_image=False):
-        img = self.transform(pil_image).unsqueeze(0).to(self.device)
-        inputs = self.processor(images=img,text="", return_tensors='pt').to(self.device)
+        img = self.transform(pil_image).to(self.device).unsqueeze(0)
+
         with torch.no_grad():
             if full_image:
-                # режим загрузки полного изображения (if supported)
-                outputs = self.model.encode_image(inputs['pixel_values'], mode='full')
+                outputs = self.model.encode_image(img, mode='full')
             else:
-                outputs = self.model.encode_image(inputs['pixel_values'])
+                outputs = self.model.encode_image(img)
+
         return outputs.cpu()
 
 
