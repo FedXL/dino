@@ -79,52 +79,34 @@ class Dino2ExtractorV1(EmbeddingExtractor):
         print(f"[Эмбеддинг извлечён за {elapsed:.2f} сек]")
         return result
 
-class Intern3VL_2BExtractorV1(EmbeddingExtractor):
-    def __init__(self,
-                 model_name='OpenGVLab/InternVL2_5-8B',
-                 device=DEVICE,
-                 image_size=448):
-        start = time.perf_counter()
-        print("[Загрузка InternVL3...]")
+
+class InternVL3ImageExtractor(EmbeddingExtractor):
+    def __init__(self, model_id="OpenGVLab/InternVL3-1B", image_size=448, device=DEVICE):
         self.device = device
         self.image_size = image_size
-        model_id = "OpenGVLab/InternVL3-1B"
-        IMAGENET_MEAN = (0.485, 0.456, 0.406)
-        IMAGENET_STD = (0.229, 0.224, 0.225)
+        self.model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
 
-        self.processor = AutoProcessor.from_pretrained(
-            model_id,
-            trust_remote_code=True
-        )
-
-        self.model = AutoModel.from_pretrained(
-            model_id,
-            trust_remote_code=True
-        ).to(device)
-
-        self.model.eval()
-        print(f"[Модель загружена за {time.perf_counter() - start:.2f} сек]")
-
-        print("[Создание transform...]")
-        start = time.perf_counter()
         self.transform = transforms.Compose([
-            transforms.Resize(self.image_size, interpolation=Image.BICUBIC),
-            transforms.CenterCrop(self.image_size),
+            transforms.Resize((image_size, image_size)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225]),
         ])
-        print(f"[Transform готов за {time.perf_counter() - start:.2f} сек]")
 
-    def extract(self, pil_image: Image.Image, full_image=False):
-        img = self.transform(pil_image).to(self.device).unsqueeze(0)
+    def extract(self, pil_image: Image.Image):
+        img_tensor = self.transform(pil_image).unsqueeze(0).to(self.device)
+
+        inputs = {
+            "pixel_values": img_tensor,
+            "input_ids": torch.tensor([[1]], device=self.device),
+            "attention_mask": torch.tensor([[1]], device=self.device),
+            "mode": "image"
+        }
 
         with torch.no_grad():
-            if full_image:
-                outputs = self.model.encode_image(img, mode='full')
-            else:
-                outputs = self.model.encode_image(img)
+            output = self.model(**inputs)
 
-        return outputs.cpu()
+        return output.image_embeds.squeeze(0).cpu()
 
 
 
