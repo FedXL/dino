@@ -85,7 +85,6 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
         self.device = device
         self.image_size = image_size
         self.model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
-
         self.transform = transforms.Compose([
             transforms.Resize((image_size, image_size)),
             transforms.ToTensor(),
@@ -100,7 +99,6 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
             "pixel_values": img_tensor,
             "input_ids": torch.tensor([[1]], device=self.device),
             "attention_mask": torch.tensor([[1]], device=self.device),
-            "mode": "image"
         }
 
         with torch.no_grad():
