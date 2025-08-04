@@ -104,7 +104,7 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
 
         with torch.no_grad():
             output = self.model(**inputs)
-
+        print(output)
         return output.image_embeds.squeeze(0).cpu()
 
 
