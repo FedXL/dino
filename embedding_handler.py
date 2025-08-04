@@ -117,7 +117,7 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
 
     def extract(self, pil_image: Image.Image, full_image=False):
         img = self.transform(pil_image).unsqueeze(0).to(self.device)
-        inputs = self.processor(images=img, return_tensors='pt').to(self.device)
+        inputs = self.processor(images=img,text="", return_tensors='pt').to(self.device)
         with torch.no_grad():
             if full_image:
                 # режим загрузки полного изображения (if supported)
