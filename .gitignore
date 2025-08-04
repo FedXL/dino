@@ -61,7 +61,8 @@ logs/
 # VSCode
 .vscode/
 .history/
-
+internvit_model
+internvit_model2
 # Sublime Text
 *.sublime-workspace
 *.sublime-project

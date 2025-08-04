@@ -10,6 +10,7 @@ import time
 import requests
 from io import BytesIO
 
+from transformers import AutoProcessor, AutoModel
 
 
 class EmbeddingExtractor(ABC):
@@ -44,7 +45,7 @@ class URLImageLoader(ImageLoader):
 
 
 class Dino2ExtractorV1(EmbeddingExtractor):
-    def __init__(self, image_size=518, model_name='dinov2_vitg14', device='cuda'):
+    def __init__(self, image_size=518, model_name='dinov2_vitg14', device='cpu'):
         start = time.perf_counter()
         self.image_size = image_size
         self.device = device
@@ -77,6 +78,52 @@ class Dino2ExtractorV1(EmbeddingExtractor):
         result = features.squeeze(0).cpu().numpy()
         print(f"[Эмбеддинг извлечён за {elapsed:.2f} сек]")
         return result
+
+class Intern3VL_2BExtractorV1(EmbeddingExtractor):
+    def __init__(self,
+                 model_name='OpenGVLab/InternVL2_5-8B',
+                 device='cpu',
+                 image_size=448):
+        start = time.perf_counter()
+        print("[Загрузка InternVL3...]")
+        self.device = device
+        self.image_size = image_size
+        model_id = "OpenGVLab/InternViT-300M-448px-V2_5"
+
+        self.processor = AutoProcessor.from_pretrained(
+            model_id,
+            trust_remote_code=True
+        )
+
+        self.model = AutoModel.from_pretrained(
+            model_id,
+            trust_remote_code=True
+        ).to(device)
+
+        self.model.eval()
+        print(f"[Модель загружена за {time.perf_counter() - start:.2f} сек]")
+
+        print("[Создание transform...]")
+        start = time.perf_counter()
+        self.transform = transforms.Compose([
+            transforms.Resize(self.image_size, interpolation=Image.BICUBIC),
+            transforms.CenterCrop(self.image_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5]*3, std=[0.5]*3)
+        ])
+        print(f"[Transform готов за {time.perf_counter() - start:.2f} сек]")
+
+    def extract(self, pil_image: Image.Image, full_image=False):
+        img = self.transform(pil_image).unsqueeze(0).to(self.device)
+        inputs = self.processor(images=img, return_tensors='pt').to(self.device)
+        with torch.no_grad():
+            if full_image:
+                # режим загрузки полного изображения (if supported)
+                outputs = self.model.encode_image(inputs['pixel_values'], mode='full')
+            else:
+                outputs = self.model.encode_image(inputs['pixel_values'])
+        return outputs.cpu()
+
 
 
 class EmbeddingService:
