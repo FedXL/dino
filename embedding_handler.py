@@ -96,9 +96,10 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
         img_tensor = self.transform(pil_image).unsqueeze(0).to(self.device)
 
         inputs = {
-            "pixel_values": img_tensor,
-            "input_ids": torch.tensor([[1]], device=self.device),
-            "attention_mask": torch.tensor([[1]], device=self.device),
+            "pixel_values": img_tensor,  # изображение
+            "input_ids": torch.tensor([[1]]),  # заглушка текста
+            "attention_mask": torch.tensor([[1]]),  # маска внимания
+            "image_flags": torch.tensor([[1]], dtype=torch.bool, device=self.device)  # указываем что картинка есть
         }
 
         with torch.no_grad():
