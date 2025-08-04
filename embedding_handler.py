@@ -84,7 +84,7 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
     def __init__(self, model_id="OpenGVLab/InternVL3-1B", image_size=448, device=DEVICE):
         self.device = device
         self.image_size = image_size
-        self.model = AutoModelForVision2Seq.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
+        self.model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
 
         self.transform = transforms.Compose([
             transforms.Resize((image_size, image_size)),
