@@ -8,6 +8,8 @@ from queue import Queue
 from contextlib import asynccontextmanager
 from starlette.concurrency import run_in_threadpool
 from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader, Intern3VL_2BExtractorV1
+from dotenv import load_dotenv
+load_dotenv()
 
 fastapi_logger = logging.getLogger("fastapi")
 
@@ -17,8 +19,10 @@ class EmbeddingRequest(BaseModel):
 task_queue = Queue()
 results = {}
 AUTH_TOKEN = os.getenv('TOKEN')
-embedding_service = EmbeddingService(URLImageLoader(), Intern3VL_2BExtractorV1())
-embedding_service2 = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
+print('stuped token',AUTH_TOKEN)
+embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
+embedding_service_Intern3VL_1B = EmbeddingService(URLImageLoader(), Intern3VL_2BExtractorV1())
+
 
 
 @asynccontextmanager
@@ -34,7 +38,7 @@ async def lifespan(app: FastAPI):
                 "Content-Type": "application/json",
                 "User-Agent": "embedding-service/1.0"
             },
-            timeout=5
+            timeout=10
         )
         if response.status_code in (200, 201):
             print(f"IP отправлен: {ip}")
@@ -76,7 +80,7 @@ async def extract_embedding(request: EmbeddingRequest):
     print(f'[fastapi start] {start}')
     fastapi_logger.info(f"start {time}")
 
-    result = await run_in_threadpool(embedding_service2.extract, request.url)
+    result = await run_in_threadpool(embedding_service_Intern3VL_1B.extract, request.url)
     embedding = result.tolist()
 
     # result = embedding_service.extract(request.url)

@@ -45,7 +45,7 @@ class URLImageLoader(ImageLoader):
 
 
 class Dino2ExtractorV1(EmbeddingExtractor):
-    def __init__(self, image_size=518, model_name='dinov2_vitg14', device='cpu'):
+    def __init__(self, image_size=518, model_name='dinov2_vitg14', device='cuda'):
         start = time.perf_counter()
         self.image_size = image_size
         self.device = device
@@ -82,13 +82,15 @@ class Dino2ExtractorV1(EmbeddingExtractor):
 class Intern3VL_2BExtractorV1(EmbeddingExtractor):
     def __init__(self,
                  model_name='OpenGVLab/InternVL2_5-8B',
-                 device='cpu',
+                 device='cuda',
                  image_size=448):
         start = time.perf_counter()
         print("[Загрузка InternVL3...]")
         self.device = device
         self.image_size = image_size
-        model_id = "OpenGVLab/InternViT-300M-448px-V2_5"
+        model_id = "OpenGVLab/InternVL3-1B"
+        IMAGENET_MEAN = (0.485, 0.456, 0.406)
+        IMAGENET_STD = (0.229, 0.224, 0.225)
 
         self.processor = AutoProcessor.from_pretrained(
             model_id,
@@ -109,7 +111,7 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
             transforms.Resize(self.image_size, interpolation=Image.BICUBIC),
             transforms.CenterCrop(self.image_size),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.5]*3, std=[0.5]*3)
+            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
         ])
         print(f"[Transform готов за {time.perf_counter() - start:.2f} сек]")
 
