@@ -74,7 +74,7 @@ async def extract_embedding(request: EmbeddingRequest):
 async def root():
     return {"message": "embedding service is up and running!"}
 
-@app.post("embedding/test_extract")
+@app.post("/embedding/test_extract")
 async def extract_embedding(request: EmbeddingRequest):
     start = time.perf_counter()
     print(f'[fastapi start] {start}')

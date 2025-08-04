@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Union, BinaryIO, Optional, Tuple
-
 import torch
 from PIL.ImageFile import ImageFile
 from torchvision import transforms
@@ -9,8 +8,9 @@ import numpy as np
 import time
 import requests
 from io import BytesIO
-
 from transformers import AutoProcessor, AutoModel
+
+DEVICE = 'cpu'
 
 
 class EmbeddingExtractor(ABC):
@@ -45,7 +45,7 @@ class URLImageLoader(ImageLoader):
 
 
 class Dino2ExtractorV1(EmbeddingExtractor):
-    def __init__(self, image_size=518, model_name='dinov2_vitg14', device='cuda'):
+    def __init__(self, image_size=518, model_name='dinov2_vitg14', device=DEVICE):
         start = time.perf_counter()
         self.image_size = image_size
         self.device = device
@@ -82,7 +82,7 @@ class Dino2ExtractorV1(EmbeddingExtractor):
 class Intern3VL_2BExtractorV1(EmbeddingExtractor):
     def __init__(self,
                  model_name='OpenGVLab/InternVL2_5-8B',
-                 device='cuda',
+                 device=DEVICE,
                  image_size=448):
         start = time.perf_counter()
         print("[Загрузка InternVL3...]")
@@ -125,6 +125,8 @@ class Intern3VL_2BExtractorV1(EmbeddingExtractor):
             else:
                 outputs = self.model.encode_image(inputs['pixel_values'])
         return outputs.cpu()
+
+
 
 
 
