@@ -24,4 +24,4 @@ outputs = model(pixel_values)
 print(outputs)
 embedding = outputs.pooler_output
 print(embedding)
-print('len embd:',len(embedding))
+print('len embd:',len(embedding[0]))
