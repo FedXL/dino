@@ -6,7 +6,12 @@ model = AutoModel.from_pretrained(
     'OpenGVLab/InternViT-300M-448px-V2_5',
     torch_dtype=torch.bfloat16,
     low_cpu_mem_usage=True,
-    trust_remote_code=True).cuda().eval()
+    trust_remote_code=True
+).cuda().eval()
+
+# Отключение FlashAttention (если модель поддерживает этот параметр)
+if hasattr(model.config, 'use_flash_attn'):
+    model.config.use_flash_attn = False
 
 image = Image.open('./1.png').convert('RGB')
 
