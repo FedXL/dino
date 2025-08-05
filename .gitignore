@@ -98,7 +98,7 @@ yarn-error.log*
 ##########################
 # Images and generated media
 ##########################
-*.png
+
 *.jpg
 *.jpeg
 *.gif
