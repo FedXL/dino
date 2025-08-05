@@ -9,8 +9,8 @@ from contextlib import asynccontextmanager
 from starlette.concurrency import run_in_threadpool
 from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader, Intern3VL_2BExtractorV1
 from dotenv import load_dotenv
-load_dotenv()
 
+load_dotenv()
 fastapi_logger = logging.getLogger("fastapi")
 
 class EmbeddingRequest(BaseModel):
@@ -19,10 +19,8 @@ class EmbeddingRequest(BaseModel):
 task_queue = Queue()
 results = {}
 AUTH_TOKEN = os.getenv('TOKEN')
-print('stuped token',AUTH_TOKEN)
 embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 embedding_service_Intern3VL_1B = EmbeddingService(URLImageLoader(), Intern3VL_2BExtractorV1())
-
 
 
 @asynccontextmanager

@@ -10,7 +10,7 @@ import requests
 from io import BytesIO
 from transformers import AutoProcessor, AutoModel, AutoModelForVision2Seq
 
-DEVICE = 'cpu'
+DEVICE = 'gpu'
 
 
 class EmbeddingExtractor(ABC):
