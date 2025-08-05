@@ -22,3 +22,6 @@ pixel_values = pixel_values.to(torch.bfloat16).cuda()
 
 outputs = model(pixel_values)
 print(outputs)
+embedding = outputs.pooler_output
+print(embedding)
+print('len embd:',embedding)
