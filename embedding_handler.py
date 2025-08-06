@@ -9,7 +9,9 @@ import time
 import requests
 from io import BytesIO
 from transformers import AutoProcessor, AutoModel, AutoModelForVision2Seq
-
+import torch
+from PIL import Image
+from transformers import CLIPImageProcessor
 DEVICE = 'cuda'
 
 
@@ -80,33 +82,26 @@ class Dino2ExtractorV1(EmbeddingExtractor):
         return result
 
 
-class Intern3VL_2BExtractorV1(EmbeddingExtractor):
+class InternVIT600mbExtractor(EmbeddingExtractor):
     def __init__(self, model_id="OpenGVLab/InternVL3-1B", image_size=448, device=DEVICE):
         self.device = device
         self.image_size = image_size
-        self.model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
-        self.transform = transforms.Compose([
-            transforms.Resize((image_size, image_size)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225]),
-        ])
+
+        self.model = AutoModel.from_pretrained(
+            'OpenGVLab/InternViT-300M-448px-V2_5',
+            torch_dtype=torch.bfloat16,
+            low_cpu_mem_usage=True,
+            trust_remote_code=True
+        ).cuda().eval()
+        self.image_processor = CLIPImageProcessor.from_pretrained('OpenGVLab/InternViT-300M-448px-V2_5')
+
 
     def extract(self, pil_image: Image.Image):
-        img_tensor = self.transform(pil_image).unsqueeze(0).to(self.device)
-
-        inputs = {
-            "pixel_values": img_tensor,  # изображение
-            "input_ids": torch.tensor([[1]]),  # заглушка текста
-            "attention_mask": torch.tensor([[1]]),  # маска внимания
-            "image_flags": torch.tensor([[1]], dtype=torch.bool, device=self.device)  # указываем что картинка есть
-        }
-
-        with torch.no_grad():
-            output = self.model(**inputs)
-        print(output)
-        return output.image_embeds.squeeze(0).cpu()
-
+        pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
+        pixel_values = pixel_values.to(torch.bfloat16).cuda()
+        outputs = self.model(pixel_values)
+        embedding = outputs.pooler_output
+        return embedding.squeeze(0).cpu()
 
 
 

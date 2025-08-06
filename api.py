@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from queue import Queue
 from contextlib import asynccontextmanager
 from starlette.concurrency import run_in_threadpool
-from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader, Intern3VL_2BExtractorV1
+from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader, InternVIT600mbExtractor
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,7 +20,7 @@ task_queue = Queue()
 results = {}
 AUTH_TOKEN = os.getenv('TOKEN')
 embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
-embedding_service_Intern3VL_1B = EmbeddingService(URLImageLoader(), Intern3VL_2BExtractorV1())
+embedding_vit_600m = EmbeddingService(URLImageLoader(), InternVIT600mbExtractor())
 
 
 @asynccontextmanager
@@ -78,7 +78,7 @@ async def extract_embedding(request: EmbeddingRequest):
     print(f'[fastapi start] {start}')
     fastapi_logger.info(f"start {time}")
 
-    result = await run_in_threadpool(embedding_service_Intern3VL_1B.extract, request.url)
+    result = await run_in_threadpool(embedding_vit_600m.extract, request.url)
     embedding = result.tolist()
 
     # result = embedding_service.extract(request.url)
