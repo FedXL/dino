@@ -20,6 +20,7 @@ task_queue = Queue()
 results = {}
 AUTH_TOKEN = os.getenv('TOKEN')
 embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
+
 embedding_vit_600m = EmbeddingService(URLImageLoader(), InternVIT600mbExtractor())
 
 
@@ -78,11 +79,11 @@ async def extract_embedding(request: EmbeddingRequest):
     print(f'[fastapi start] {start}')
     fastapi_logger.info(f"start {time}")
 
-    result = await run_in_threadpool(embedding_vit_600m.extract, request.url)
-    embedding = result.tolist()
-
-    # result = embedding_service.extract(request.url)
+    # result = await run_in_threadpool(embedding_vit_600m.extract, request.url)
     # embedding = result.tolist()
+
+    result = embedding_service.extract(request.url)
+    embedding = result.tolist()
 
     time_left = time.perf_counter() - start
     print(f"[fastapi end handler] {time_left}")
