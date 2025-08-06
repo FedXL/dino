@@ -81,7 +81,7 @@ class EmbeddingRequest(BaseModel):
     url: str
 
 # 💬 FastAPI
-app = FastAPI()
+
 
 @app.post("/embedding/test_extract")
 async def extract_embedding(request: EmbeddingRequest):
@@ -99,7 +99,6 @@ async def extract_embedding(request: EmbeddingRequest):
     loaded = time.perf_counter()
     print(f"[{request.url}] ✅ Изображение загружено за {loaded - start:.2f} сек")
 
-    # 🕒 2. Ждём доступ к модели — max 10 сек
     try:
         async with asyncio.timeout(10):  # таймаут ожидания очереди
             queue_start = time.perf_counter()
