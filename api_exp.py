@@ -44,13 +44,17 @@ async def extract_embedding(request: InternVITExperiment):
         async with asyncio.timeout(10):
             queue_start = time.perf_counter()
             print(f"[{request.url}] ⏳ Ожидаем доступ к модели...")
-
             async with embedding_semaphore:
                 waited = time.perf_counter()
                 print(f"[{request.url}] 🔓 Доступ получен через {waited - queue_start:.2f} сек")
-                result = embedding_vit_600m.extractor.extract(image)
+                result = embedding_vit_600m.extractor.extract(image,
+                                                              focus_percentage=request.focus_percentage,
+                                                              grid_size=request.grid_size,
+                                                              global_weight=request.global_weight,
+                                                              focused_weight=request.focused_weight,
+                                                              tile_weight=request.tile_weight
+                                                              )
                 embedding = result.tolist()
-
                 finished = time.perf_counter()
                 print(f"[{request.url}] 🧠 Обработка завершена за {finished - waited:.2f} сек")
     except TimeoutError:

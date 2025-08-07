@@ -17,7 +17,7 @@ DEVICE = 'cuda'
 
 class EmbeddingExtractor(ABC):
     @abstractmethod
-    def extract(self, image: Image.Image) -> np.ndarray:
+    def extract(self, image: Image.Image,**kwargs) -> np.ndarray:
         ...
 
 
@@ -291,8 +291,9 @@ class EmbeddingService:
         self.loader = loader
         self.extractor = extractor
 
-    def extract(self, url: str) -> np.ndarray:
+    def extract(self, url: str,**kwargs) -> np.ndarray:
         image, message = self.loader.load(url)
         if image is None:
             raise ValueError(message)
-        return self.extractor.extract(image)
+        return self.extractor.extract(image,**kwargs)
+
