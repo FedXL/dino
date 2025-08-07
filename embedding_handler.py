@@ -264,7 +264,8 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
                      self.tile_weight * tile_combined)
 
         elapsed = time.perf_counter() - start
-        result = final_emb.numpy()
+        # result = final_emb.numpy()
+        result = final_emb.to(dtype=torch.float16).cpu().numpy()
         print(f"[Трёхуровневый эмбеддинг извлечён за {elapsed:.2f} сек]")
         print(f"[Веса: глобал={self.global_weight}, фокус={self.focused_weight}, тайлы={self.tile_weight}]")
 
