@@ -8,7 +8,8 @@ from pydantic import BaseModel
 from queue import Queue
 from contextlib import asynccontextmanager
 from starlette.concurrency import run_in_threadpool
-from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader, InternVIT600mbExtractor
+from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader, InternVIT600mbExtractor, \
+    InternVITThreeLevelExtractor
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,7 +23,7 @@ results = {}
 AUTH_TOKEN = os.getenv('TOKEN')
 embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
 
-embedding_vit_600m = EmbeddingService(URLImageLoader(), InternVIT600mbExtractor())
+embedding_vit_600m = EmbeddingService(URLImageLoader(), InternVITThreeLevelExtractor())
 
 
 @asynccontextmanager
@@ -88,7 +89,7 @@ async def extract_embedding(request: EmbeddingRequest):
     start = time.perf_counter()
     print(f"\n[{request.url}] 🌐 Запрос получен")
 
-    # 🔄 1. Параллельно загружаем изображение
+
     try:
         image, message = embedding_vit_600m.loader.load(request.url)
         if image is None:
@@ -100,7 +101,7 @@ async def extract_embedding(request: EmbeddingRequest):
     print(f"[{request.url}] ✅ Изображение загружено за {loaded - start:.2f} сек")
 
     try:
-        async with asyncio.timeout(10):  # таймаут ожидания очереди
+        async with asyncio.timeout(10):
             queue_start = time.perf_counter()
             print(f"[{request.url}] ⏳ Ожидаем доступ к модели...")
 
@@ -108,7 +109,7 @@ async def extract_embedding(request: EmbeddingRequest):
                 waited = time.perf_counter()
                 print(f"[{request.url}] 🔓 Доступ получен через {waited - queue_start:.2f} сек")
 
-                # 💡 3. Извлекаем эмбеддинг
+
                 result = embedding_vit_600m.extractor.extract(image)
                 embedding = result.tolist()
 
