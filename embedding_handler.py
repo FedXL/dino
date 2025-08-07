@@ -218,6 +218,7 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
 
         Returns:
             Combined feature embedding as numpy array
+            :param pil_image:
             :param tile_weight:
             :param focused_weight:
             :param global_weight:
@@ -251,7 +252,7 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
 
         # Level 2: Focused detail (center crop)
         focused_start = time.perf_counter()
-        focused_square = self._crop_center_percentage(square_image, focus_percentage)
+        focused_square = self._crop_center_percentage(square_image, self.focus_percentage)
         focused_emb = self._extract_single_features(focused_square)
         focused_time = time.perf_counter() - focused_start
         print(f"[Фокусированные детали извлечены за {focused_time:.2f} сек, размер {focused_square.size}]")
