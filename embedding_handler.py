@@ -108,11 +108,6 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
     def __init__(self,
                  model_id="OpenGVLab/InternViT-300M-448px-V2_5",
                  input_size=448,
-                 focus_percentage=50,
-                 grid_size=3,
-                 global_weight=0.2,
-                 focused_weight=0.4,
-                 tile_weight=0.4,
                  device=DEVICE):
         """
         Three-level feature extractor with global, focused, and tile-based features
@@ -127,18 +122,13 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
             tile_weight: Weight for tile-based features
             device: Computing device
         """
+
         self.device = device
         self.input_size = input_size
-        self.focus_percentage = focus_percentage / 100.0  # Convert to fraction
-        self.grid_size = grid_size
-        self.global_weight = global_weight
-        self.focused_weight = focused_weight
-        self.tile_weight = tile_weight
+
 
         # Validate weights sum to 1.0
-        total_weight = global_weight + focused_weight + tile_weight
-        if abs(total_weight - 1.0) > 1e-6:
-            raise ValueError(f"Weights must sum to 1.0, got {total_weight}")
+
 
         print(f"[Загрузка InternViT трёхуровневой модели...]")
         start = time.perf_counter()
@@ -154,7 +144,7 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
         self.image_processor = CLIPImageProcessor.from_pretrained(model_id)
 
         print(f"[Модель загружена за {time.perf_counter() - start:.2f} сек]")
-        print(f"[Параметры: размер={input_size}, фокус={focus_percentage}%, сетка={grid_size}x{grid_size}]")
+
 
     def _crop_to_center_square(self, image):
         """Crop rectangle image to centered square"""
@@ -202,7 +192,7 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
     def _extract_single_features(self, pil_image):
         """Extract features from a single image"""
         # Resize to model's expected input size
-        resized_image = pil_image.resize((self.input_size, self.input_size), Image.BILINEAR)
+        resized_image = pil_image.resize((self.input_size, self.input_size), Image.LANCZOS)
 
         # Process through model
         pixel_values = self.image_processor(images=resized_image, return_tensors='pt').pixel_values
@@ -214,7 +204,12 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
 
         return features.cpu()
 
-    def extract(self, pil_image: Image.Image) -> np.ndarray:
+    def extract(self, pil_image: Image.Image,
+                focus_percentage=50,
+                 grid_size=3,
+                 global_weight=0.2,
+                 focused_weight=0.4,
+                 tile_weight=0.4) -> np.ndarray:
         """
         Extract three-level features: global, focused, and tile-based
 
@@ -223,7 +218,24 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
 
         Returns:
             Combined feature embedding as numpy array
+            :param tile_weight:
+            :param focused_weight:
+            :param global_weight:
+            :param grid_size:
+            :param focus_percentage:
         """
+        self.focus_percentage = focus_percentage / 100.0
+        total_weight = global_weight + focused_weight + tile_weight
+        if abs(total_weight - 1.0) > 1e-6:
+            raise ValueError(f"Weights must sum to 1.0, got {total_weight}")
+        print(f"[Параметры: размер={self.input_size}, фокус={focus_percentage}%, сетка={grid_size}x{grid_size}]")
+
+
+        # Convert to fraction
+        self.grid_size = grid_size
+        self.global_weight = global_weight
+        self.focused_weight = focused_weight
+        self.tile_weight = tile_weight
         print("[Начало трёхуровневого извлечения эмбеддинга]")
         start = time.perf_counter()
 
@@ -239,7 +251,7 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
 
         # Level 2: Focused detail (center crop)
         focused_start = time.perf_counter()
-        focused_square = self._crop_center_percentage(square_image, self.focus_percentage)
+        focused_square = self._crop_center_percentage(square_image, focus_percentage)
         focused_emb = self._extract_single_features(focused_square)
         focused_time = time.perf_counter() - focused_start
         print(f"[Фокусированные детали извлечены за {focused_time:.2f} сек, размер {focused_square.size}]")
