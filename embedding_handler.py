@@ -202,7 +202,7 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
     def _extract_single_features(self, pil_image):
         """Extract features from a single image"""
         # Resize to model's expected input size
-        resized_image = pil_image.resize((self.input_size, self.input_size), Image.LANCZOS)
+        resized_image = pil_image.resize((self.input_size, self.input_size), Image.BILINEAR)
 
         # Process through model
         pixel_values = self.image_processor(images=resized_image, return_tensors='pt').pixel_values
