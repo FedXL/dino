@@ -231,7 +231,6 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
             raise ValueError(f"Weights must sum to 1.0, got {total_weight}")
         print(f"[Параметры: размер={self.input_size}, фокус={focus_percentage}%, сетка={grid_size}x{grid_size}]")
 
-
         # Convert to fraction
         self.grid_size = grid_size
         self.global_weight = global_weight
