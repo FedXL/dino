@@ -36,7 +36,7 @@ async def add_process_id_header(request: Request, call_next):
     response = await call_next(request)
     # Добавим в заголовок ответа PID воркера для теста
     response.headers["X-Process-ID"] = str(pid)
-    print(f"Request handled by PID: {pid}")
+    print(f"Request handled by PID✅✅: {pid}")
     return response
 
 @app_exp.exception_handler(RequestValidationError)
