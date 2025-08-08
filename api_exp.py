@@ -3,6 +3,11 @@ import time
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from embedding_handler import  EmbeddingService, URLImageLoader, InternVITThreeLevelExtractor
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi import status
+
 
 embedding_vit_600m = EmbeddingService(URLImageLoader(), InternVITThreeLevelExtractor())
 app_exp = FastAPI()
@@ -12,18 +17,35 @@ embedding_semaphore = asyncio.Semaphore(1)
 class EmbeddingRequest(BaseModel):
     url: str
 
-class InternVITExperiment(BaseModel):
-    url: str
-    title: str
-    focus_percentage : int
+
+class ParamsExp(BaseModel):
+    focus_percentage: int
     grid_size: int
     global_weight: float
     focused_weight: float
     tile_weight: float
+
+
+class InternVITExperiment(BaseModel):
+    url: str
+    title: str
     id: int
     task_or_image : str
+    params: ParamsExp
 
 
+
+@app_exp.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Формируем удобный ответ
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "message": "Неверный формат данных в запросе",
+            "errors": exc.errors(),
+            "body": exc.body
+        },
+    )
 
 @app_exp.post("/")
 async def hello(request):
