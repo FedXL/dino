@@ -14,6 +14,7 @@ class EmbeddingRequest(BaseModel):
 
 class InternVITExperiment(BaseModel):
     url: str
+    title: str
     focus_percentage : int
     grid_size: int
     global_weight: float
@@ -21,6 +22,7 @@ class InternVITExperiment(BaseModel):
     tile_weight: float
     id: int
     task_or_image : str
+
 
 
 @app_exp.post("/")
