@@ -13,10 +13,6 @@ embedding_vit_600m = EmbeddingService(URLImageLoader(), InternVITThreeLevelExtra
 app_exp = FastAPI()
 embedding_semaphore = asyncio.Semaphore(1)
 
-# 💬 Запрос
-class EmbeddingRequest(BaseModel):
-    url: str
-
 
 class ParamsExp(BaseModel):
     focus_percentage: int
@@ -87,4 +83,6 @@ async def extract_embedding(request: InternVITExperiment):
         raise HTTPException(status_code=503, detail="Модель занята. Повторите позже.")
     total = time.perf_counter()
     print(f"[{request.url}] ✅ Общая длительность: {total - start:.2f} сек")
-    return {"embedding": embedding, 'params':  request.dict(exclude_unset=False)}
+    result = request.dict(exclude_unset=False)
+    result['embedding'] = embedding
+    return result
