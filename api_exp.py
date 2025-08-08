@@ -19,6 +19,8 @@ class InternVITExperiment(BaseModel):
     global_weight: float
     focused_weight: float
     tile_weight: float
+    id: int
+    task_or_image : str
 
 
 @app_exp.post("/")
@@ -61,4 +63,4 @@ async def extract_embedding(request: InternVITExperiment):
         raise HTTPException(status_code=503, detail="Модель занята. Повторите позже.")
     total = time.perf_counter()
     print(f"[{request.url}] ✅ Общая длительность: {total - start:.2f} сек")
-    return {"embedding": embedding, "url": request.url}
+    return {"embedding": embedding, 'params':  request.dict(exclude_unset=False)}
