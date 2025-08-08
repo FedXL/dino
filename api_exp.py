@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -29,7 +30,14 @@ class InternVITExperiment(BaseModel):
     task_or_image : str
     params: ParamsExp
 
-
+@app_exp.middleware("http")
+async def add_process_id_header(request: Request, call_next):
+    pid = os.getpid()
+    response = await call_next(request)
+    # Добавим в заголовок ответа PID воркера для теста
+    response.headers["X-Process-ID"] = str(pid)
+    print(f"Request handled by PID: {pid}")
+    return response
 
 @app_exp.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
