@@ -74,11 +74,11 @@ async def extract_embedding(request: InternVITExperiment):
                 waited = time.perf_counter()
                 print(f"[{request.url}] 🔓 Доступ получен через {waited - queue_start:.2f} сек")
                 result = embedding_vit_600m.extractor.extract(image,
-                                                              focus_percentage=request.focus_percentage,
-                                                              grid_size=request.grid_size,
-                                                              global_weight=request.global_weight,
-                                                              focused_weight=request.focused_weight,
-                                                              tile_weight=request.tile_weight
+                                                              focus_percentage=request.params.focus_percentage,
+                                                              grid_size=request.params.grid_size,
+                                                              global_weight=request.params.global_weight,
+                                                              focused_weight=request.params.focused_weight,
+                                                              tile_weight=request.params.tile_weight
                                                               )
                 embedding = result.tolist()
                 finished = time.perf_counter()
