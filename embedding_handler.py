@@ -189,20 +189,25 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
 
         return tiles
 
-    def _extract_single_features(self, pil_image):
-        """Extract features from a single image"""
-        # Resize to model's expected input size
-        resized_image = pil_image.resize((self.input_size, self.input_size), Image.LANCZOS)
-
-        # Process through model
-        pixel_values = self.image_processor(images=resized_image, return_tensors='pt').pixel_values
-        pixel_values = pixel_values.to(torch.bfloat16).to(self.device)
-
+    def _extract_single_features(self, pil_image: Image.Image) -> torch.Tensor:
         with torch.no_grad():
-            outputs = self.model(pixel_values)
-            features = outputs.pooler_output.squeeze(0)
+            pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
+            pixel_values = pixel_values.to(self.device, dtype=torch.bfloat16)
 
-        return features.cpu()
+            if hasattr(self.model, "get_image_features"):
+                feats = self.model.get_image_features(pixel_values=pixel_values)
+            else:
+                outputs = self.model(pixel_values)
+                if hasattr(outputs, "image_embeds"):
+                    feats = outputs.image_embeds
+                elif hasattr(outputs, "last_hidden_state"):
+                    # mean-pool patch tokens
+                    feats = outputs.last_hidden_state.mean(dim=1)
+                else:
+                    feats = outputs.pooler_output  # fallback if nothing else
+
+            feats = torch.nn.functional.normalize(feats, dim=-1)
+            return feats.squeeze(0).to(torch.float32).cpu()
 
     def extract(self, pil_image: Image.Image,
                 focus_percentage=50,
@@ -271,13 +276,12 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
         print(f"[{len(tiles)} тайлов обработано за {tiles_time:.2f} сек]")
 
         # Combine all three levels
+        elapsed = time.perf_counter() - start
         final_emb = (self.global_weight * global_emb +
                      self.focused_weight * focused_emb +
                      self.tile_weight * tile_combined)
-
-        elapsed = time.perf_counter() - start
-        # result = final_emb.numpy()
-        result = final_emb.to(dtype=torch.float16).cpu().numpy()
+        final_emb = torch.nn.functional.normalize(final_emb, dim=-1)
+        result = final_emb.cpu().numpy()
         print(f"[Трёхуровневый эмбеддинг извлечён за {elapsed:.2f} сек]")
         print(f"[Веса: глобал={self.global_weight}, фокус={self.focused_weight}, тайлы={self.tile_weight}]")
 
