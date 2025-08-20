@@ -303,13 +303,13 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
         """
         self.device = device
         
-        print(f"[Загрузка InternViT-6B модели...]")
+        print(f"[Загрузка {model_id} модели...]")
         start = time.perf_counter()
         
         # Load model using the recommended approach
         self.model = AutoModel.from_pretrained(
             model_id,
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.bfloat32,
             low_cpu_mem_usage=True,
             trust_remote_code=True,
             attn_implementation="eager"
