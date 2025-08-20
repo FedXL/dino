@@ -64,44 +64,44 @@ async def hello(request):
     return {'hello': 'im here'}
 
 
-@app_exp.post("/embedding/test_extract")
-async def extract_embedding(request: InternVITExperiment):
-    start = time.perf_counter()
-    print(f"\n[{request.url}] 🌐 Запрос получен")
-    try:
-        image, message = embedding_vit_600m.loader.load(request.url)
-        if image is None:
-            raise ValueError(message)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+# @app_exp.post("/embedding/test_extract")
+# async def extract_embedding(request: InternVITExperiment):
+#     start = time.perf_counter()
+#     print(f"\n[{request.url}] 🌐 Запрос получен")
+#     try:
+#         image, message = embedding_vit_600m.loader.load(request.url)
+#         if image is None:
+#             raise ValueError(message)
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=str(e))
 
-    loaded = time.perf_counter()
-    print(f"[{request.url}] ✅ Изображение загружено за {loaded - start:.2f} сек")
+#     loaded = time.perf_counter()
+#     print(f"[{request.url}] ✅ Изображение загружено за {loaded - start:.2f} сек")
 
-    try:
-        async with asyncio.timeout(10):
-            queue_start = time.perf_counter()
-            print(f"[{request.url}] ⏳ Ожидаем доступ к модели...")
-            async with embedding_semaphore:
-                waited = time.perf_counter()
-                print(f"[{request.url}] 🔓 Доступ получен через {waited - queue_start:.2f} сек")
-                result = embedding_vit_600m.extractor.extract(image,
-                                                              focus_percentage=request.params.focus_percentage,
-                                                              grid_size=request.params.grid_size,
-                                                              global_weight=request.params.global_weight,
-                                                              focused_weight=request.params.focused_weight,
-                                                              tile_weight=request.params.tile_weight
-                                                              )
-                embedding = result.tolist()
-                finished = time.perf_counter()
-                print(f"[{request.url}] 🧠 Обработка завершена за {finished - waited:.2f} сек")
-    except TimeoutError:
-        raise HTTPException(status_code=503, detail="Модель занята. Повторите позже.")
-    total = time.perf_counter()
-    print(f"[{request.url}] ✅ Общая длительность: {total - start:.2f} сек")
-    result = request.dict(exclude_unset=False)
-    result['embedding'] = embedding
-    return result
+#     try:
+#         async with asyncio.timeout(10):
+#             queue_start = time.perf_counter()
+#             print(f"[{request.url}] ⏳ Ожидаем доступ к модели...")
+#             async with embedding_semaphore:
+#                 waited = time.perf_counter()
+#                 print(f"[{request.url}] 🔓 Доступ получен через {waited - queue_start:.2f} сек")
+#                 result = embedding_vit_600m.extractor.extract(image,
+#                                                               focus_percentage=request.params.focus_percentage,
+#                                                               grid_size=request.params.grid_size,
+#                                                               global_weight=request.params.global_weight,
+#                                                               focused_weight=request.params.focused_weight,
+#                                                               tile_weight=request.params.tile_weight
+#                                                               )
+#                 embedding = result.tolist()
+#                 finished = time.perf_counter()
+#                 print(f"[{request.url}] 🧠 Обработка завершена за {finished - waited:.2f} сек")
+#     except TimeoutError:
+#         raise HTTPException(status_code=503, detail="Модель занята. Повторите позже.")
+#     total = time.perf_counter()
+#     print(f"[{request.url}] ✅ Общая длительность: {total - start:.2f} сек")
+#     result = request.dict(exclude_unset=False)
+#     result['embedding'] = embedding
+#     return result
 
 
 
@@ -113,7 +113,7 @@ async def extract_internvit_simple_embedding(request: SimpleEmbeddingRequest):
 
     # Load image
     try:
-        image, message = embedding_vit_600m.loader.load(request.url)
+        image, message = embedding_vit_simple.loader.load(request.url)
         if image is None:
             raise ValueError(message)
     except Exception as e:
@@ -131,7 +131,7 @@ async def extract_internvit_simple_embedding(request: SimpleEmbeddingRequest):
                 waited = time.perf_counter()
                 print(f"[{request.url}] 🔓 Доступ получен через {waited - queue_start:.2f} сек")
 
-                result = embedding_vit_600m.extractor.extract(image)
+                result = embedding_vit_simple.extractor.extract(image)
                 embedding = result.tolist()
 
                 finished = time.perf_counter()
