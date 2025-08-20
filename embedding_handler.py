@@ -344,12 +344,11 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
             
             outputs = self.model(pixel_values)
             
-            # Now we need to extract the actual embedding from outputs
-            # Since it's BaseModelOutputWithPooling, it should have pooler_output
+            # Extract the embedding from outputs
             embedding = outputs.pooler_output
             
-            # Convert to numpy array
-            result = embedding.squeeze(0).cpu().numpy()
+            # Convert to float32 first, then to numpy array
+            result = embedding.squeeze(0).cpu().to(torch.float32).numpy()
         
         elapsed = time.perf_counter() - start
         print(f"[Эмбеддинг извлечён за {elapsed:.2f} сек]")
