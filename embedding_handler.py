@@ -338,16 +338,14 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
             
             outputs = self.model(pixel_values)
             
-            # Try using CLS token from last_hidden_state instead of pooler_output
+            # Use mean pooling of all patch tokens (this should be different from CLS/pooler)
             if hasattr(outputs, 'last_hidden_state') and outputs.last_hidden_state is not None:
-                # Use CLS token (first token)
-                embedding = outputs.last_hidden_state[:, 0]
-                print("Using CLS token from last_hidden_state")
-            elif hasattr(outputs, 'pooler_output') and outputs.pooler_output is not None:
-                embedding = outputs.pooler_output
-                print("Using pooler_output")
+                # Mean pool all tokens 
+                embedding = outputs.last_hidden_state.mean(dim=1)
+                print("Using mean-pooled all tokens from last_hidden_state")
+                print(f"last_hidden_state shape: {outputs.last_hidden_state.shape}")
             else:
-                raise ValueError("No suitable embedding found in model outputs")
+                raise ValueError("No last_hidden_state found in model outputs")
             
             print(f"Raw embedding shape: {embedding.shape}")
             print(f"Raw embedding mean: {embedding.mean():.6f}")
