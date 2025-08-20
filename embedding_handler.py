@@ -309,7 +309,7 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
         # Load model using the recommended approach
         self.model = AutoModel.from_pretrained(
             model_id,
-            torch_dtype=torch.bfloat32,
+            # torch_dtype=torch.bfloat32,
             low_cpu_mem_usage=True,
             trust_remote_code=True,
             attn_implementation="eager"
@@ -340,7 +340,7 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
             
             # Follow the documentation example exactly
             pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
-            pixel_values = pixel_values.to(torch.bfloat16).to(self.device)
+            pixel_values = pixel_values.to(torch.bfloat32).to(self.device)
             
             outputs = self.model(pixel_values)
             
