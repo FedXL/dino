@@ -323,14 +323,10 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
     def extract(self, pil_image: Image.Image) -> np.ndarray:
         """
         Extract embedding from PIL image using the simple InternViT approach
-        
-        Args:
-            pil_image: Input PIL image
-            
-        Returns:
-            Feature embedding as numpy array
         """
         print("[Начало извлечения эмбеддинга]")
+        print(f"Input image size: {pil_image.size}")
+        print(f"Input image mode: {pil_image.mode}")
         start = time.perf_counter()
         
         with torch.no_grad():
@@ -340,15 +336,28 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
             
             # Follow the documentation example exactly
             pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
+            print(f"Pixel values shape: {pixel_values.shape}")
+            print(f"Pixel values dtype: {pixel_values.dtype}")
+            print(f"Pixel values min/max: {pixel_values.min():.3f}/{pixel_values.max():.3f}")
+            
             pixel_values = pixel_values.to(self.device)
             
             outputs = self.model(pixel_values)
+            print(f"Model outputs type: {type(outputs)}")
             
             # Extract the embedding from outputs
             embedding = outputs.pooler_output
+            print(f"Embedding shape: {embedding.shape}")
+            print(f"Embedding dtype: {embedding.dtype}")
+            print(f"Embedding min/max: {embedding.min():.6f}/{embedding.max():.6f}")
+            print(f"Embedding mean: {embedding.mean():.6f}")
+            print(f"Embedding std: {embedding.std():.6f}")
             
             # Convert to numpy array
             result = embedding.squeeze(0).cpu().numpy()
+            print(f"Result shape: {result.shape}")
+            print(f"Result first 5 values: {result[:5]}")
+            print(f"Result last 5 values: {result[-5:]}")
         
         elapsed = time.perf_counter() - start
         print(f"[Эмбеддинг извлечён за {elapsed:.2f} сек]")
