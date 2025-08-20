@@ -338,16 +338,18 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
             if pil_image.mode != 'RGB':
                 pil_image = pil_image.convert('RGB')
             
-            # Process image exactly as in the example
+            # Follow the documentation example exactly
             pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
             pixel_values = pixel_values.to(torch.bfloat16).to(self.device)
             
-            # Get model outputs - simple and direct like in your example
             outputs = self.model(pixel_values)
             
-            # Convert to numpy - we'll need to figure out which part of outputs to use
-            # This depends on what the model returns
-            result = outputs  # We may need to adjust this based on actual output structure
+            # Now we need to extract the actual embedding from outputs
+            # Since it's BaseModelOutputWithPooling, it should have pooler_output
+            embedding = outputs.pooler_output
+            
+            # Convert to numpy array
+            result = embedding.squeeze(0).cpu().numpy()
         
         elapsed = time.perf_counter() - start
         print(f"[Эмбеддинг извлечён за {elapsed:.2f} сек]")
