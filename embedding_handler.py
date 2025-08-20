@@ -311,7 +311,8 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
             model_id,
             torch_dtype=torch.bfloat16,
             low_cpu_mem_usage=True,
-            trust_remote_code=True
+            trust_remote_code=True,
+            attn_implementation="eager"
         ).to(device).eval()
         
         # Load image processor
