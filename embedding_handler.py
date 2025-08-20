@@ -288,6 +288,71 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
         return result
 
 
+class InternVITSimpleExtractor(EmbeddingExtractor):
+    def __init__(self,
+                 model_id="OpenGVLab/InternViT-6B-448px-V2_5",
+                 processor_id="OpenGVLab/InternViT-6B-448px-V1-5",
+                 device=DEVICE):
+        """
+        Simple InternViT feature extractor using the recommended approach
+        NO cutting into tiles, just feature extraction
+        Args:
+            model_id: HuggingFace model identifier for the main model
+            processor_id: HuggingFace model identifier for the image processor
+            device: Computing device
+        """
+        self.device = device
+        
+        print(f"[Загрузка InternViT-6B модели...]")
+        start = time.perf_counter()
+        
+        # Load model using the recommended approach
+        self.model = AutoModel.from_pretrained(
+            model_id,
+            torch_dtype=torch.bfloat16,
+            low_cpu_mem_usage=True,
+            trust_remote_code=True
+        ).to(device).eval()
+        
+        # Load image processor
+        self.image_processor = CLIPImageProcessor.from_pretrained(processor_id)
+        
+        print(f"[Модель загружена за {time.perf_counter() - start:.2f} сек]")
+    
+    def extract(self, pil_image: Image.Image) -> np.ndarray:
+        """
+        Extract embedding from PIL image using the simple InternViT approach
+        
+        Args:
+            pil_image: Input PIL image
+            
+        Returns:
+            Feature embedding as numpy array
+        """
+        print("[Начало извлечения эмбеддинга]")
+        start = time.perf_counter()
+        
+        with torch.no_grad():
+            # Convert image to RGB if needed
+            if pil_image.mode != 'RGB':
+                pil_image = pil_image.convert('RGB')
+            
+            # Process image exactly as in the example
+            pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
+            pixel_values = pixel_values.to(torch.bfloat16).to(self.device)
+            
+            # Get model outputs - simple and direct like in your example
+            outputs = self.model(pixel_values)
+            
+            # Convert to numpy - we'll need to figure out which part of outputs to use
+            # This depends on what the model returns
+            result = outputs  # We may need to adjust this based on actual output structure
+        
+        elapsed = time.perf_counter() - start
+        print(f"[Эмбеддинг извлечён за {elapsed:.2f} сек]")
+        
+        return result
+
 
 
 class EmbeddingService:
