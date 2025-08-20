@@ -106,7 +106,7 @@ async def extract_embedding(request: InternVITExperiment):
 
 
 # Then use it in the new endpoint
-@app.post("/embedding/extract_internvit_simple")
+@app_exp.post("/embedding/extract_internvit_simple")
 async def extract_internvit_simple_embedding(request: SimpleEmbeddingRequest):
     start = time.perf_counter()
     print(f"\n[{request.url}] 🌐 Запрос получен для простого InternViT")
