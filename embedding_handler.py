@@ -338,10 +338,22 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
             
             outputs = self.model(pixel_values)
             
-            # Extract the embedding from outputs
-            embedding = outputs.pooler_output
+            # Try using CLS token from last_hidden_state instead of pooler_output
+            if hasattr(outputs, 'last_hidden_state') and outputs.last_hidden_state is not None:
+                # Use CLS token (first token)
+                embedding = outputs.last_hidden_state[:, 0]
+                print("Using CLS token from last_hidden_state")
+            elif hasattr(outputs, 'pooler_output') and outputs.pooler_output is not None:
+                embedding = outputs.pooler_output
+                print("Using pooler_output")
+            else:
+                raise ValueError("No suitable embedding found in model outputs")
             
-            # Normalize the embedding - this is crucial for similarity calculations
+            print(f"Raw embedding shape: {embedding.shape}")
+            print(f"Raw embedding mean: {embedding.mean():.6f}")
+            print(f"Raw embedding std: {embedding.std():.6f}")
+            
+            # Normalize the embedding
             embedding = torch.nn.functional.normalize(embedding, p=2, dim=-1)
             
             # Convert to numpy array
