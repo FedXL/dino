@@ -290,8 +290,8 @@ class InternVITThreeLevelExtractor(EmbeddingExtractor):
 
 class InternVITSimpleExtractor(EmbeddingExtractor):
     def __init__(self,
-                 model_id="OpenGVLab/InternViT-300M-448px-V2_5",
-                 processor_id="OpenGVLab/InternViT-300M-448px-V1_5",
+                 model_id="OpenGVLab/InternViT-300M-448px",
+                 processor_id="OpenGVLab/InternViT-300M-448px",
                  device=DEVICE):
         """
         Simple InternViT feature extractor using the recommended approach
