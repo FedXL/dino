@@ -340,15 +340,15 @@ class InternVITSimpleExtractor(EmbeddingExtractor):
             
             # Follow the documentation example exactly
             pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
-            pixel_values = pixel_values.to(torch.bfloat32).to(self.device)
+            pixel_values = pixel_values.to(self.device)
             
             outputs = self.model(pixel_values)
             
             # Extract the embedding from outputs
             embedding = outputs.pooler_output
             
-            # Convert to float32 first, then to numpy array
-            result = embedding.squeeze(0).cpu().to(torch.float32).numpy()
+            # Convert to numpy array
+            result = embedding.squeeze(0).cpu().numpy()
         
         elapsed = time.perf_counter() - start
         print(f"[Эмбеддинг извлечён за {elapsed:.2f} сек]")
