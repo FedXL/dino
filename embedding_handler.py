@@ -9,6 +9,7 @@ import time
 import requests
 from io import BytesIO
 from transformers import AutoImageProcessor, AutoModel
+from transformers import pipeline
 
 
 
@@ -102,6 +103,61 @@ class Dino3ExtractorV1(EmbeddingExtractor):
         
         # Get global embedding (CLS token)
         embedding = outputs.pooler_output.squeeze().cpu().numpy()
+        
+        return embedding
+
+
+class Dino3ExtractorV1pipeline(EmbeddingExtractor):
+    """
+    DINOv3 embedding extractor using the pipeline interface.
+    This bypasses the AutoImageProcessor issues.
+    """
+    
+    def __init__(
+        self,
+        model_name: str = "facebook/dinov3-vits16-pretrain-lvd1689m",
+        device: Optional[int] = None
+    ):
+        """
+        Initialize the DINOv3 embedding extractor using pipeline.
+        
+        Args:
+            model_name (str): DINOv3 model variant
+            device (int, optional): GPU device ID (0, 1, etc.) or None for auto
+        """
+        self.model_name = model_name
+        
+        # Use pipeline interface which handles processor internally
+        self.feature_extractor = pipeline(
+            task="image-feature-extraction",
+            model=model_name,
+            torch_dtype=torch.bfloat16,
+            device=device  # Auto-detects if None
+        )
+        
+        # Get embedding dimension by testing with a dummy image
+        dummy_image = Image.new('RGB', (224, 224), color='red')
+        dummy_features = self.feature_extractor(dummy_image)
+        self.embedding_dim = len(dummy_features[0])
+        
+        print(f"Loaded DINOv3 model using pipeline: {model_name}")
+        print(f"Embedding dimension using pipeline: {self.embedding_dim}")
+
+    def extract(self, image: Image.Image) -> np.ndarray:
+        """
+        Extract global embedding from an image.
+        
+        Args:
+            image (PIL.Image.Image): Input image
+            
+        Returns:
+            np.ndarray: Dense embedding vector for the entire image.
+        """
+        # Pipeline automatically handles preprocessing and extraction
+        features = self.feature_extractor(image)
+        
+        # Convert to numpy array (pipeline returns nested list)
+        embedding = np.array(features[0], dtype=np.float32)
         
         return embedding
 

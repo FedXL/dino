@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from embedding_handler import (
     Dino2ExtractorV1,
     Dino3ExtractorV1,
+    Dino3ExtractorV1pipeline,
     EmbeddingService,
     # InternVIT600mbExtractor,
     # InternVITSimpleExtractor,
@@ -25,6 +26,7 @@ from embedding_handler import (
 AVAILABLE_MODELS = {
     "Dino2ExtractorV1": Dino2ExtractorV1,
     "Dino3ExtractorV1": Dino3ExtractorV1,
+    "Dino3ExtractorV1pipeline": Dino3ExtractorV1pipeline,
     # "InternVIT600mbExtractor": InternVIT600mbExtractor,
     # "InternVITThreeLevelExtractor": InternVITThreeLevelExtractor,
     # "InternVITSimpleExtractor": InternVITSimpleExtractor
@@ -33,8 +35,8 @@ AVAILABLE_MODELS = {
 # ===== GLOBAL STATE =====
 
 # Global embedding service - will be dynamically switched
-current_embedding_service = EmbeddingService(URLImageLoader(), Dino3ExtractorV1())
-current_model_class = "Dino3ExtractorV1"
+current_embedding_service = EmbeddingService(URLImageLoader(), Dino3ExtractorV1pipeline())
+current_model_class = "Dino3ExtractorV1pipeline"
 embedding_semaphore = asyncio.Semaphore(1)
 
 # ===== PYDANTIC MODELS =====
