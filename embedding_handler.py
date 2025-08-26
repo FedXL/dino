@@ -8,7 +8,7 @@ import numpy as np
 import time
 import requests
 from io import BytesIO
-from transformers import AutoImageProcessor, AutoModel, CLIPImageProcessor
+from transformers import AutoImageProcessor, AutoModel
 from transformers import pipeline
 
 

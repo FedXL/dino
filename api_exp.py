@@ -180,15 +180,25 @@ async def switch_model(request: ModelSwitchRequest):
     
     # Acquire semaphore to prevent extraction during model switch
     async with embedding_semaphore:
+        # Store the previous model state for potential rollback
+        previous_model_class = current_model_class
+        previous_extractor_class = AVAILABLE_MODELS[current_model_class]
+        
         try:
             start_time = time.perf_counter()
             print(f"🔓 Acquired semaphore for model switch")
             
-            # Clean up current model from GPU memory
-            print(f"🗑️ Unloading current model: {current_model_class}")
+            # Load new model FIRST before unloading the old one
+            print(f"🚀 Loading new model: {request.model_class}")
+            model_class = AVAILABLE_MODELS[request.model_class]
+            new_extractor = model_class()
+            new_service = EmbeddingService(URLImageLoader(), new_extractor)
+            
+            # Only after successful new model loading, clean up the old model
+            print(f"🗑️ Unloading previous model: {current_model_class}")
             old_model = current_embedding_service.extractor
             
-            # Move model to CPU and delete references
+            # Move old model to CPU and delete references
             if hasattr(old_model, 'model') and hasattr(old_model.model, 'cpu'):
                 old_model.model.cpu()
             
@@ -196,13 +206,10 @@ async def switch_model(request: ModelSwitchRequest):
             del current_embedding_service
             cleanup_gpu_memory()
             
-            print(f"✅ {current_model_class} unloaded")
+            print(f"✅ {previous_model_class} unloaded")
             
-            # Load new model
-            print(f"🚀 Loading new model: {request.model_class}")
-            model_class = AVAILABLE_MODELS[request.model_class]
-            new_extractor = model_class()
-            current_embedding_service = EmbeddingService(URLImageLoader(), new_extractor)
+            # Switch to the new model
+            current_embedding_service = new_service
             current_model_class = request.model_class
             
             elapsed_time = time.perf_counter() - start_time
@@ -212,22 +219,23 @@ async def switch_model(request: ModelSwitchRequest):
             return {
                 "status": "success",
                 "message": f"Successfully switched to {request.model_class}",
-                "previous_model": old_model.__class__.__name__ if 'old_model' in locals() else None,
+                "previous_model": previous_model_class,
                 "current_model": current_model_class,
                 "switch_time_seconds": round(elapsed_time, 2)
             }
             
         except Exception as e:
             print(f"❌ Error during model switch: {str(e)}")
-            # Try to recover by loading InternVITSimpleExtractor as fallback
+            # Try to recover by restoring the previous model
             try:
-                print("🔄 Attempting fallback to InternVITSimpleExtractor...")
-                fallback_extractor = InternVITSimpleExtractor()
+                print(f"🔄 Attempting fallback to previous model: {previous_model_class}...")
+                fallback_extractor = previous_extractor_class()
                 current_embedding_service = EmbeddingService(URLImageLoader(), fallback_extractor)
-                current_model_class = "InternVITSimpleExtractor"
-                print("✅ Fallback successful")
+                current_model_class = previous_model_class
+                print(f"✅ Fallback to {previous_model_class} successful")
             except Exception as fallback_error:
-                print(f"❌ Fallback failed: {str(fallback_error)}")
+                print(f"❌ Fallback to {previous_model_class} failed: {str(fallback_error)}")
+                print("🆘 System is now in an unstable state - no valid model loaded")
             
             raise HTTPException(
                 status_code=500,
