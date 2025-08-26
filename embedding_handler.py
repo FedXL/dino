@@ -202,10 +202,12 @@ class Dino2ExtractorV1(EmbeddingExtractor):
 
 
 class InternVIT600mbExtractor(EmbeddingExtractor):
-    def __init__(self, model_id="OpenGVLab/InternVL3-1B", image_size=448, device=DEVICE):
-        self.device = device
+    def __init__(self, model_id="OpenGVLab/InternVL3-1B", 
+                 image_size=448, 
+                 device: Optional[str] = None,):
         self.image_size = image_size
-
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        
         self.model = AutoModel.from_pretrained(
             'OpenGVLab/InternViT-300M-448px-V2_5',
             torch_dtype=torch.bfloat16,
