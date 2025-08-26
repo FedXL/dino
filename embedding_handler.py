@@ -201,26 +201,26 @@ class Dino2ExtractorV1(EmbeddingExtractor):
         return result
 
 
-# class InternVIT600mbExtractor(EmbeddingExtractor):
-#     def __init__(self, model_id="OpenGVLab/InternVL3-1B", image_size=448, device=DEVICE):
-#         self.device = device
-#         self.image_size = image_size
+class InternVIT600mbExtractor(EmbeddingExtractor):
+    def __init__(self, model_id="OpenGVLab/InternVL3-1B", image_size=448, device=DEVICE):
+        self.device = device
+        self.image_size = image_size
 
-#         self.model = AutoModel.from_pretrained(
-#             'OpenGVLab/InternViT-300M-448px-V2_5',
-#             torch_dtype=torch.bfloat16,
-#             low_cpu_mem_usage=True,
-#             trust_remote_code=True
-#         ).cuda().eval()
-#         self.image_processor = CLIPImageProcessor.from_pretrained('OpenGVLab/InternViT-300M-448px-V2_5')
+        self.model = AutoModel.from_pretrained(
+            'OpenGVLab/InternViT-300M-448px-V2_5',
+            torch_dtype=torch.bfloat16,
+            low_cpu_mem_usage=True,
+            trust_remote_code=True
+        ).cuda().eval()
+        self.image_processor = CLIPImageProcessor.from_pretrained('OpenGVLab/InternViT-300M-448px-V2_5')
 
 
-#     def extract(self, pil_image: Image.Image):
-#         pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
-#         pixel_values = pixel_values.to(torch.bfloat16).cuda()
-#         outputs = self.model(pixel_values)
-#         embedding = outputs.pooler_output
-#         return embedding.squeeze(0).cpu()
+    def extract(self, pil_image: Image.Image):
+        pixel_values = self.image_processor(images=pil_image, return_tensors='pt').pixel_values
+        pixel_values = pixel_values.to(torch.bfloat16).cuda()
+        outputs = self.model(pixel_values)
+        embedding = outputs.pooler_output
+        return embedding.squeeze(0).cpu()
 
 
 # class InternVITThreeLevelExtractor(EmbeddingExtractor):
