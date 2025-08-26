@@ -52,7 +52,7 @@ class Dino3ExtractorV1(EmbeddingExtractor):
     
     def __init__(
         self,
-        model_name: str = "facebook/dinov3-vits16-pretrain-lvd1689m",
+        model_name: str = "facebook/dinov3-vitb16-pretrain-lvd1689m",
         device: Optional[str] = None
     ):
         """
@@ -71,7 +71,7 @@ class Dino3ExtractorV1(EmbeddingExtractor):
         self.processor = AutoImageProcessor.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(
             model_name,
-            torch_dtype=torch.float16,
+            # torch_dtype=torch.float16,
             device_map="auto"
         )
         self.model.eval()
