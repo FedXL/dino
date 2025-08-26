@@ -86,7 +86,7 @@ class Dino3ExtractorV1(EmbeddingExtractor):
         """
         Extract global embedding from an image.
         
-        Args:
+        Arg s:
             image (PIL.Image.Image): Input image
             
         Returns:
@@ -106,13 +106,13 @@ class Dino3ExtractorV1(EmbeddingExtractor):
         return embedding
 
 class Dino2ExtractorV1(EmbeddingExtractor):
-    def __init__(self, image_size=518, model_name='dinov2_vitg14', device=DEVICE):
+    def __init__(self, image_size=518, model_name='dinov2_vitg14'):
         start = time.perf_counter()
         self.image_size = image_size
-        self.device = device
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
 
         print("[Загрузка модели...]")
-        self.model = torch.hub.load('facebookresearch/dinov2', model_name, trust_repo=True).to(device)
+        self.model = torch.hub.load('facebookresearch/dinov2', model_name, trust_repo=True).to(self.device)
         self.model.eval()
         print(f"[Модель загружена за {time.perf_counter() - start:.2f} сек]")
 
