@@ -8,7 +8,7 @@ import numpy as np
 import time
 import requests
 from io import BytesIO
-from transformers import AutoImageProcessor, AutoModel
+from transformers import AutoImageProcessor, AutoModel, CLIPImageProcessor
 from transformers import pipeline
 
 
@@ -207,7 +207,7 @@ class InternVIT600mbExtractor(EmbeddingExtractor):
                  device: Optional[str] = None,):
         self.image_size = image_size
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        
+
         self.model = AutoModel.from_pretrained(
             'OpenGVLab/InternViT-300M-448px-V2_5',
             torch_dtype=torch.bfloat16,
