@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from enum import Enum
 
 from embedding_handler import (
     Dino2ExtractorV1,
@@ -22,20 +23,29 @@ from embedding_handler import (
 
 # ===== CONFIGURATION =====
 
+# Available model classes enum for FastAPI dropdown
+class AvailableModels(str, Enum):
+    DINO2_V1 = "Dino2ExtractorV1"
+    DINO3_V1 = "Dino3ExtractorV1" 
+    DINO3_PIPELINE = "Dino3ExtractorV1pipeline"
+    INTERNVIT_600MB = "InternVIT600mbExtractor"
+    # INTERNVIT_THREE_LEVEL = "InternVITThreeLevelExtractor"
+    # INTERNVIT_SIMPLE = "InternVITSimpleExtractor"
+
 # Available model classes mapping
 AVAILABLE_MODELS = {
-    "Dino2ExtractorV1": Dino2ExtractorV1,
-    "Dino3ExtractorV1": Dino3ExtractorV1,
-    "Dino3ExtractorV1pipeline": Dino3ExtractorV1pipeline,
-    "InternVIT600mbExtractor": InternVIT600mbExtractor,
-    # "InternVITThreeLevelExtractor": InternVITThreeLevelExtractor,
-    # "InternVITSimpleExtractor": InternVITSimpleExtractor
+    AvailableModels.DINO2_V1: Dino2ExtractorV1,
+    AvailableModels.DINO3_V1: Dino3ExtractorV1,
+    AvailableModels.DINO3_PIPELINE: Dino3ExtractorV1pipeline,
+    AvailableModels.INTERNVIT_600MB: InternVIT600mbExtractor,
+    # AvailableModels.INTERNVIT_THREE_LEVEL: InternVITThreeLevelExtractor,
+    # AvailableModels.INTERNVIT_SIMPLE: InternVITSimpleExtractor
 }
 
 # ===== GLOBAL STATE =====
 
 # Global embedding service - will be dynamically switched
-current_model_class = "Dino3ExtractorV1"
+current_model_class = AvailableModels.DINO3_V1
 current_embedding_service = EmbeddingService(URLImageLoader(), AVAILABLE_MODELS[current_model_class]())
 embedding_semaphore = asyncio.Semaphore(1)
 
@@ -45,7 +55,7 @@ class SimpleEmbeddingRequest(BaseModel):
     url: str
 
 class ModelSwitchRequest(BaseModel):
-    model_class: str
+    model_class: AvailableModels
 
 class ParamsExp(BaseModel):
     focus_percentage: int
@@ -164,7 +174,7 @@ async def switch_model(request: ModelSwitchRequest):
     
     # Check if model class is available
     if request.model_class not in AVAILABLE_MODELS:
-        available_models = list(AVAILABLE_MODELS.keys())
+        available_models = [model.value for model in AvailableModels]
         raise HTTPException(
             status_code=400, 
             detail=f"Model class '{request.model_class}' not available. Available models: {available_models}"
@@ -253,7 +263,7 @@ async def get_model_status():
     
     return {
         "current_model": current_model_class,
-        "available_models": list(AVAILABLE_MODELS.keys()),
+        "available_models": [model.value for model in AvailableModels],
         "gpu_available": torch.cuda.is_available(),
         "gpu_memory_allocated": torch.cuda.memory_allocated() if torch.cuda.is_available() else None,
         "gpu_memory_cached": torch.cuda.memory_reserved() if torch.cuda.is_available() else None
