@@ -35,8 +35,8 @@ AVAILABLE_MODELS = {
 # ===== GLOBAL STATE =====
 
 # Global embedding service - will be dynamically switched
-current_embedding_service = EmbeddingService(URLImageLoader(), InternVIT600mbExtractor())
-current_model_class = "InternVIT600mbExtractor"
+current_model_class = "Dino3ExtractorV1"
+current_embedding_service = EmbeddingService(URLImageLoader(), AVAILABLE_MODELS[current_model_class]())
 embedding_semaphore = asyncio.Semaphore(1)
 
 # ===== PYDANTIC MODELS =====
