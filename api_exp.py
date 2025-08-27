@@ -7,7 +7,7 @@ import torch
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from enum import Enum
 
 from embedding_handler import (
@@ -55,7 +55,7 @@ class SimpleEmbeddingRequest(BaseModel):
     url: str
 
 class ModelSwitchRequest(BaseModel):
-    model_class: AvailableModels
+    model_class: AvailableModels = Field(..., description="Select the model to switch to")
 
 class ParamsExp(BaseModel):
     focus_percentage: int
