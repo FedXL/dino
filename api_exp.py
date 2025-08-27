@@ -34,19 +34,17 @@ class AvailableModels(str, Enum):
 
 # Available model classes mapping
 AVAILABLE_MODELS = {
-    AvailableModels.DINO2_V1: Dino2ExtractorV1,
-    AvailableModels.DINO3_V1: Dino3ExtractorV1,
-    AvailableModels.DINO3_PIPELINE: Dino3ExtractorV1pipeline,
-    AvailableModels.INTERNVIT_600MB: InternVIT600mbExtractor,
-    # AvailableModels.INTERNVIT_THREE_LEVEL: InternVITThreeLevelExtractor,
-    # AvailableModels.INTERNVIT_SIMPLE: InternVITSimpleExtractor
+    "Dino2ExtractorV1": Dino2ExtractorV1,
+    "Dino3ExtractorV1": Dino3ExtractorV1,
+    "Dino3ExtractorV1pipeline": Dino3ExtractorV1pipeline,
+    "InternVIT600mbExtractor": InternVIT600mbExtractor,
 }
 
 # ===== GLOBAL STATE =====
 
 # Global embedding service - will be dynamically switched
 current_model_class = AvailableModels.DINO3_V1
-current_embedding_service = EmbeddingService(URLImageLoader(), AVAILABLE_MODELS[current_model_class]())
+current_embedding_service = EmbeddingService(URLImageLoader(), AVAILABLE_MODELS[current_model_class.value]())
 embedding_semaphore = asyncio.Semaphore(1)
 
 # ===== PYDANTIC MODELS =====
@@ -173,7 +171,7 @@ async def switch_model(request: ModelSwitchRequest):
     print(f"📊 Current service extractor type: {type(current_embedding_service.extractor).__name__}")
     
     # Check if model class is available
-    if request.model_class not in AVAILABLE_MODELS:
+    if request.model_class.value not in AVAILABLE_MODELS:
         available_models = [model.value for model in AvailableModels]
         raise HTTPException(
             status_code=400, 
@@ -194,7 +192,7 @@ async def switch_model(request: ModelSwitchRequest):
     async with embedding_semaphore:
         # Store the previous model state for potential rollback
         previous_model_class = current_model_class
-        previous_extractor_class = AVAILABLE_MODELS[current_model_class]
+        previous_extractor_class = AVAILABLE_MODELS[current_model_class.value]
         
         try:
             start_time = time.perf_counter()
@@ -202,7 +200,7 @@ async def switch_model(request: ModelSwitchRequest):
             
             # Load new model FIRST before unloading the old one
             print(f"🚀 Loading new model: {request.model_class}")
-            model_class = AVAILABLE_MODELS[request.model_class]
+            model_class = AVAILABLE_MODELS[request.model_class.value]
             new_extractor = model_class()
             new_service = EmbeddingService(URLImageLoader(), new_extractor)
             
