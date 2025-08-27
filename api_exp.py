@@ -8,7 +8,6 @@ from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from enum import Enum
 
 from embedding_handler import (
     Dino2ExtractorV1,
@@ -23,14 +22,7 @@ from embedding_handler import (
 
 # ===== CONFIGURATION =====
 
-# Available model classes enum for FastAPI dropdown
-class AvailableModels(str, Enum):
-    DINO2_V1 = "Dino2ExtractorV1"
-    DINO3_V1 = "Dino3ExtractorV1" 
-    DINO3_PIPELINE = "Dino3ExtractorV1pipeline"
-    INTERNVIT_600MB = "InternVIT600mbExtractor"
-    # INTERNVIT_THREE_LEVEL = "InternVITThreeLevelExtractor"
-    # INTERNVIT_SIMPLE = "InternVITSimpleExtractor"
+
 
 # Available model classes mapping
 AVAILABLE_MODELS = {
@@ -43,8 +35,8 @@ AVAILABLE_MODELS = {
 # ===== GLOBAL STATE =====
 
 # Global embedding service - will be dynamically switched
-current_model_class = AvailableModels.DINO3_V1
-current_embedding_service = EmbeddingService(URLImageLoader(), AVAILABLE_MODELS[current_model_class.value]())
+current_model_class = "Dino3ExtractorV1"  # String instead of enum
+current_embedding_service = EmbeddingService(URLImageLoader(), AVAILABLE_MODELS[current_model_class]())
 embedding_semaphore = asyncio.Semaphore(1)
 
 # ===== PYDANTIC MODELS =====
@@ -52,8 +44,15 @@ embedding_semaphore = asyncio.Semaphore(1)
 class SimpleEmbeddingRequest(BaseModel):
     url: str
 
+from typing import Literal
+
 class ModelSwitchRequest(BaseModel):
-    model_class: AvailableModels = Field(..., description="Select the model to switch to")
+    model_class: Literal[
+        "Dino2ExtractorV1",
+        "Dino3ExtractorV1", 
+        "Dino3ExtractorV1pipeline",
+        "InternVIT600mbExtractor"
+    ] = Field(..., description="Select the model to switch to")
 
 class ParamsExp(BaseModel):
     focus_percentage: int
@@ -171,8 +170,8 @@ async def switch_model(request: ModelSwitchRequest):
     print(f"📊 Current service extractor type: {type(current_embedding_service.extractor).__name__}")
     
     # Check if model class is available
-    if request.model_class.value not in AVAILABLE_MODELS:
-        available_models = [model.value for model in AvailableModels]
+    if request.model_class not in AVAILABLE_MODELS:
+        available_models = list(AVAILABLE_MODELS.keys())
         raise HTTPException(
             status_code=400, 
             detail=f"Model class '{request.model_class}' not available. Available models: {available_models}"
@@ -192,7 +191,7 @@ async def switch_model(request: ModelSwitchRequest):
     async with embedding_semaphore:
         # Store the previous model state for potential rollback
         previous_model_class = current_model_class
-        previous_extractor_class = AVAILABLE_MODELS[current_model_class.value]
+        previous_extractor_class = AVAILABLE_MODELS[current_model_class]
         
         try:
             start_time = time.perf_counter()
@@ -200,7 +199,7 @@ async def switch_model(request: ModelSwitchRequest):
             
             # Load new model FIRST before unloading the old one
             print(f"🚀 Loading new model: {request.model_class}")
-            model_class = AVAILABLE_MODELS[request.model_class.value]
+            model_class = AVAILABLE_MODELS[request.model_class]
             new_extractor = model_class()
             new_service = EmbeddingService(URLImageLoader(), new_extractor)
             
@@ -261,7 +260,7 @@ async def get_model_status():
     
     return {
         "current_model": current_model_class,
-        "available_models": [model.value for model in AvailableModels],
+        "available_models": list(AVAILABLE_MODELS.keys()),
         "gpu_available": torch.cuda.is_available(),
         "gpu_memory_allocated": torch.cuda.memory_allocated() if torch.cuda.is_available() else None,
         "gpu_memory_cached": torch.cuda.memory_reserved() if torch.cuda.is_available() else None
