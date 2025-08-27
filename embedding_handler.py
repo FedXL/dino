@@ -9,6 +9,7 @@ import time
 import requests
 from io import BytesIO
 from transformers import AutoImageProcessor, AutoModel
+from transformers import CLIPImageProcessor
 from transformers import pipeline
 
 
