@@ -14,7 +14,7 @@ from embedding_handler import (
     Dino3ExtractorV1,
     Dino3ExtractorV1pipeline,
     EmbeddingService,
-    # InternVIT600mbExtractor,
+    InternVIT600mbExtractor,
     # InternVITSimpleExtractor,
     # InternVITThreeLevelExtractor,
     URLImageLoader,
@@ -27,7 +27,7 @@ AVAILABLE_MODELS = {
     "Dino2ExtractorV1": Dino2ExtractorV1,
     "Dino3ExtractorV1": Dino3ExtractorV1,
     "Dino3ExtractorV1pipeline": Dino3ExtractorV1pipeline,
-    # "InternVIT600mbExtractor": InternVIT600mbExtractor,
+    "InternVIT600mbExtractor": InternVIT600mbExtractor,
     # "InternVITThreeLevelExtractor": InternVITThreeLevelExtractor,
     # "InternVITSimpleExtractor": InternVITSimpleExtractor
 }
@@ -35,8 +35,8 @@ AVAILABLE_MODELS = {
 # ===== GLOBAL STATE =====
 
 # Global embedding service - will be dynamically switched
-current_embedding_service = EmbeddingService(URLImageLoader(), Dino3ExtractorV1())
-current_model_class = "Dino3ExtractorV1"
+current_embedding_service = EmbeddingService(URLImageLoader(), InternVIT600mbExtractor())
+current_model_class = "InternVIT600mbExtractor"
 embedding_semaphore = asyncio.Semaphore(1)
 
 # ===== PYDANTIC MODELS =====
