@@ -160,6 +160,7 @@ async def switch_model(request: ModelSwitchRequest):
     
     print(f"\n🔄 Model switch request: {request.model_class}")
     print(f"📊 Current model: {current_model_class}")
+    print(f"📊 Current service extractor type: {type(current_embedding_service.extractor).__name__}")
     
     # Check if model class is available
     if request.model_class not in AVAILABLE_MODELS:
@@ -175,7 +176,8 @@ async def switch_model(request: ModelSwitchRequest):
         return {
             "status": "no_change",
             "message": f"Already using {request.model_class}",
-            "current_model": current_model_class
+            "current_model": current_model_class,
+            "actual_extractor": type(current_embedding_service.extractor).__name__
         }
     
     # Acquire semaphore to prevent extraction during model switch
@@ -221,6 +223,7 @@ async def switch_model(request: ModelSwitchRequest):
                 "message": f"Successfully switched to {request.model_class}",
                 "previous_model": previous_model_class,
                 "current_model": current_model_class,
+                "actual_extractor": type(current_embedding_service.extractor).__name__,
                 "switch_time_seconds": round(elapsed_time, 2)
             }
             
