@@ -9,12 +9,8 @@ from request_handler import create_new_building_in_mb
 def send_new_building_images_to_mb():
     """send new building images to mb"""
     folder = "building-update"
-
-    # Get all subdirectories (building IDs)
     building_ids = [d for d in os.listdir(folder) if os.path.isdir(os.path.join(folder, d))]
-
     result = {}
-    # Process each building directory
     for building_id in building_ids:
         building_path = os.path.join(folder, building_id)
         images = [os.path.join(building_path, f) for f in os.listdir(building_path)
@@ -30,8 +26,6 @@ def send_new_building_images_to_mb():
 def send_new_building_images_to_mb2():
     """create new building"""
     folder = "building-update-2"
-
-    # Get all subdirectories (building IDs)
     names = [d for d in os.listdir(folder) if os.path.isdir(os.path.join(folder, d))]
     print(names)
     new_building_ids = {}
@@ -85,7 +79,6 @@ def extract_embedding_from_building_images_flow():
                 json.dump(new_data, f, ensure_ascii=False, indent=2)
 
 def extract_embedding_from_task_collection(collection_name='14-buildings-set'):
-
     if collection_name == "" or not collection_name:
         collection_name = '14-buildings-set'
         print(f"Введено: {collection_name}")
@@ -123,10 +116,7 @@ def send_embedding_to_master_base(emb):
 
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(new_data, f, ensure_ascii=False, indent=2)
-
             print(f"[{index}/{total}] Обработан task ID {data.get('id')}, сохранено в {json_path}")
-
-
 
 
 def main_flow():
@@ -140,7 +130,6 @@ def main_flow():
             extract_embedding_from_task_collection(name)
         case '2':
             extract_embedding_from_building_images_flow()
-
         case '3':
             collections=get_collections_names_list()
             for collection in collections:

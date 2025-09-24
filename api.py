@@ -7,7 +7,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from starlette.concurrency import run_in_threadpool
-from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader, InternVIT600mbExtractor
+from embedding_handler import Dino2ExtractorV1, EmbeddingService, URLImageLoader, InternVIT600mbExtractor, \
+    Dino3ExtractorV1
 
 from dotenv import load_dotenv
 
@@ -19,7 +20,7 @@ class EmbeddingRequest(BaseModel):
 
 results = {}
 AUTH_TOKEN = os.getenv('TOKEN')
-embedding_service = EmbeddingService(URLImageLoader(), Dino2ExtractorV1())
+embedding_service = EmbeddingService(URLImageLoader(), Dino3ExtractorV1())
 embedding_vit_600m = EmbeddingService(URLImageLoader(), InternVIT600mbExtractor())
 
 

@@ -13,8 +13,6 @@ from transformers import CLIPImageProcessor
 from transformers import pipeline
 
 
-
-
 class EmbeddingExtractor(ABC):
     @abstractmethod
     def extract(self, image: Image.Image,**kwargs) -> np.ndarray:
